@@ -12,8 +12,7 @@ namespace SabotageSms.Models {
         [MaxLength(120)]
         public string JoinCode { get; set; }
         
-        [InverseProperty("CurrentGame")]
-        public virtual ICollection<Player> Players { get; set; }
+        public virtual ICollection<GamePlayer> Players { get; set; }
         
         public virtual ICollection<Player> GoodPlayers { get; set; }
         

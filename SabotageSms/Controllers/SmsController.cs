@@ -26,7 +26,7 @@ namespace SabotageSms.Controllers
         public async Task<string> Get()
         {
             try {
-                await _smsProvider.SendSms("11234567890", "💃💩👾🚀");
+                await _smsProvider.SendSms("12063563646", "You smell 💩 lol");
                 return "It worked :)";
             } catch (Exception) {
                 return "It didn't work :(";

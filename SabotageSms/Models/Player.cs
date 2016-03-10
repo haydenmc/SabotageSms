@@ -8,8 +8,9 @@ namespace SabotageSms.Models {
         public long PlayerId { get; set; }
         
         [MaxLength(50)]
-        
         public string PhoneNumber { get; set; }
+        
+        public string Name { get; set; }
         
         [ForeignKey("CurrentGameId")]
         public virtual Game CurrentGame { get; set; }

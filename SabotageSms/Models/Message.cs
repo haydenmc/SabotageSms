@@ -28,6 +28,6 @@ namespace SabotageSms.Models {
     public enum MessageResult {
         Success = 0,
         ParseError = 1,
-        GameStateError = 2
+        GameError = 2
     }
 }
