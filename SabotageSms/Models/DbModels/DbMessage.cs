@@ -2,20 +2,20 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace SabotageSms.Models {
-    
-    public class Message {
+namespace SabotageSms.Models.DbModels {
+    [Table("Message")]
+    public class DbMessage {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long MessageId { get; set; }
         
         [ForeignKey("PlayerId")]
-        public virtual Player Player { get; set; }
+        public virtual DbPlayer Player { get; set; }
         
         public long PlayerId { get; set; }
         
         [ForeignKey("GameId")]
-        public virtual Game Game { get; set; }
+        public virtual DbGame Game { get; set; }
         
         public long? GameId { get; set; }
         

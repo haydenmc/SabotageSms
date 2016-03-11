@@ -1,20 +1,20 @@
 using Microsoft.Data.Entity;
 
-namespace SabotageSms.Models {
+namespace SabotageSms.Models.DbModels {
     public class ApplicationDbContext : DbContext {
-        public DbSet<Player> Players { get; set; }
-        public DbSet<Game> Games { get; set; }
-        public DbSet<Message> Messages { get; set; }
+        public DbSet<DbPlayer> Players { get; set; }
+        public DbSet<DbGame> Games { get; set; }
+        public DbSet<DbMessage> Messages { get; set; }
         
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder
-                .Entity<Player>()
+                .Entity<DbPlayer>()
                 .HasIndex(p => p.PhoneNumber)
                 .IsUnique(true);
             
             modelBuilder
-                .Entity<Game>()
+                .Entity<DbGame>()
                 .HasIndex(g => g.JoinCode)
                 .IsUnique(true);
         }

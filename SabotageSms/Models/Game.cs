@@ -1,25 +1,25 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SabotageSms.Models {
-    public class Game {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    public enum GameState {
+        Unknown = 0,
+        Lobby = 1,
+        Roster = 2,
+        RosterApproval = 3,
+        Mission = 4,
+        GameEnd = 5
+    }
+    
+    public class Game
+    {
         public long GameId { get; set; }
-        
-        [MaxLength(120)]
         public string JoinCode { get; set; }
-        
-        public virtual ICollection<GamePlayer> Players { get; set; }
-        
-        public virtual ICollection<Player> GoodPlayers { get; set; }
-        
-        public virtual ICollection<Player> BadPlayers { get; set; }
-        
+        public IList<Player> Players { get; set; }
+        public ICollection<Player> GoodPlayers { get; set; }
+        public ICollection<Player> BadPlayers { get; set; }
+        public GameState CurrentState { get; set; }
         public DateTimeOffset CreatedTime { get; set; }
-        
         public DateTimeOffset LastActiveTime { get; set; }
     }
 }

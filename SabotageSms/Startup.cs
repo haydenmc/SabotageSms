@@ -9,6 +9,7 @@ using Microsoft.Data.Entity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SabotageSms.Models;
+using SabotageSms.Models.DbModels;
 using SabotageSms.Providers;
 
 namespace SabotageSms
@@ -31,10 +32,12 @@ namespace SabotageSms
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddInstance<IConfigurationRoot>(Configuration);
-            services.AddTransient<ISmsProvider, PlivoSmsProvider>();
             services.AddEntityFramework()
                 .AddSqlServer()
                 .AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Configuration["Data:DefaultConnection:ConnectionString"]));
+            services.AddSingleton<ISmsProvider, PlivoSmsProvider>();
+            services.AddSingleton<ParsingProvider, ParsingProvider>();
+            services.AddScoped<IGameDataProvider, EfGameDataProvider>();
             services.AddMvc();
         }
 

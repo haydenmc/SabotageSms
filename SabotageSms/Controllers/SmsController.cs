@@ -13,11 +13,11 @@ namespace SabotageSms.Controllers
     [Route("api/[controller]")]
     public class SmsController : Controller
     {
-        private ApplicationDbContext _db { get; set; }
+        private IGameDataProvider _gameDataProvider { get; set; }
         private ISmsProvider _smsProvider { get; set; }
         
-        public SmsController(ApplicationDbContext db, ISmsProvider smsProvider) {
-            _db = db;
+        public SmsController(IGameDataProvider gameDataProvider, ISmsProvider smsProvider) {
+            _gameDataProvider = gameDataProvider;
             _smsProvider = smsProvider;
         }
         
