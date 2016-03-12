@@ -3,12 +3,14 @@ using System.Linq;
 using SabotageSms.Models;
 using SabotageSms.Models.DbModels;
 
-namespace SabotageSms.Providers {
+namespace SabotageSms.Providers
+{
     public class EfGameDataProvider : IGameDataProvider
     {
         private ApplicationDbContext _db;
         
-        public EfGameDataProvider(ApplicationDbContext db) {
+        public EfGameDataProvider(ApplicationDbContext db)
+        {
             _db = db;
         }
         
@@ -20,6 +22,10 @@ namespace SabotageSms.Providers {
         public Game GetPlayerCurrentGame(long playerId)
         {
             return _db.Players.SingleOrDefault(p => p.PlayerId == playerId).CurrentGame;
+        }
+        
+        public Game CreateNewGame(long playerId) {
+            
         }
     }
 }

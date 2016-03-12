@@ -18,7 +18,8 @@ namespace SabotageSms
     {
         public IConfigurationRoot Configuration { get; set; }
         
-        public Startup(IHostingEnvironment env) {
+        public Startup(IHostingEnvironment env)
+        {
             // Set up configuration sources.
             var builder = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.default.json")

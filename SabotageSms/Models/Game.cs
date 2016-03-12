@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 
-namespace SabotageSms.Models {
-    public enum GameState {
-        Unknown = 0,
+namespace SabotageSms.Models
+{
+    public enum GameState
+    {
+        Any = 0,
         Lobby = 1,
         Roster = 2,
         RosterApproval = 3,

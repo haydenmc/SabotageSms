@@ -1,9 +1,11 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace SabotageSms.Models.DbModels {
+namespace SabotageSms.Models.DbModels
+{
     [Table("Player")]
-    public class DbPlayer : Player {
+    public class DbPlayer : Player
+    {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         new public long PlayerId { get; set; }

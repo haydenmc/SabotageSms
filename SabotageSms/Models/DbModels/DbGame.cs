@@ -4,9 +4,11 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 
-namespace SabotageSms.Models.DbModels {
+namespace SabotageSms.Models.DbModels
+{
     [Table("Game")]
-    public class DbGame : Game {
+    public class DbGame : Game
+    {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         new public long GameId { get; set; }
@@ -17,8 +19,10 @@ namespace SabotageSms.Models.DbModels {
         public ICollection<DbGamePlayer> GamePlayers { get; set; }
         
         [NotMapped]
-        new public IList<DbPlayer> Players {
-            get {
+        new public IList<DbPlayer> Players
+        {
+            get
+            {
                 return GamePlayers
                            .OrderBy(gp => gp.TurnOrder)
                            .Select(gp => gp.Player)

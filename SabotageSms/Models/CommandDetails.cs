@@ -1,18 +1,22 @@
-namespace SabotageSms.Models {
-    public enum CommandType {
+namespace SabotageSms.Models
+{
+    public enum CommandType
+    {
         Unknown = 0,
-        AddPlayer = 1,
-        StartGame = 2,
-        SelectRoster = 3,
-        RosterCountVote = 4,
-        RejectRoster = 5,
-        ApproveRoster = 6,
-        MissionCountSuccessFail = 7,
-        NewMission = 8,
-        GameEnd = 9
+        New = 1,
+        Join = 2,
+        StartGame = 3,
+        SelectRoster = 4,
+        RosterCountVote = 5,
+        RejectRoster = 6,
+        ApproveRoster = 7,
+        MissionCountSuccessFail = 8,
+        NewMission = 9,
+        GameEnd = 10
     }
     
-    public class CommandDetails {
+    public class CommandDetails
+    {
         public CommandType CommandType;
     }
 }

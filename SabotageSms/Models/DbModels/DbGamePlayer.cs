@@ -1,8 +1,10 @@
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace SabotageSms.Models.DbModels {
+namespace SabotageSms.Models.DbModels
+{
     [Table("GamePlayer")]
-    public class DbGamePlayer {
+    public class DbGamePlayer
+    {
         public long PlayerId { get; set; }
         
         [ForeignKey("PlayerId")]

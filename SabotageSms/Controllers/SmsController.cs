@@ -10,7 +10,7 @@ using SabotageSms.Providers;
 
 namespace SabotageSms.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/Sms")]
     public class SmsController : Controller
     {
         private IGameDataProvider _gameDataProvider { get; set; }
@@ -26,7 +26,7 @@ namespace SabotageSms.Controllers
         public async Task<string> Get()
         {
             try {
-                await _smsProvider.SendSms("12063563646", "You smell 💩 lol");
+                await _smsProvider.SendSms("11234567890", "Test!");
                 return "It worked :)";
             } catch (Exception) {
                 return "It didn't work :(";

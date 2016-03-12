@@ -13,7 +13,8 @@ namespace SabotageSms.Providers
         
         private IConfigurationRoot Configuration { get; set; }
         
-        public PlivoSmsProvider(IConfigurationRoot configuration) {
+        public PlivoSmsProvider(IConfigurationRoot configuration)
+        {
             Configuration = configuration;
         }
         
