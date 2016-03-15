@@ -5,6 +5,6 @@ namespace SabotageSms.Models
         public long PlayerId { get; set; }
         public string PhoneNumber { get; set; }
         public string Name { get; set; }
-        public long CurrentGameId { get; set ;}
+        public long? CurrentGameId { get; set; }
     }
 }

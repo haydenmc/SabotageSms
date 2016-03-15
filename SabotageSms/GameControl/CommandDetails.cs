@@ -1,4 +1,4 @@
-namespace SabotageSms.Models
+namespace SabotageSms.GameControl
 {
     public enum CommandType
     {
@@ -17,6 +17,7 @@ namespace SabotageSms.Models
     
     public class CommandDetails
     {
-        public CommandType CommandType;
+        public CommandType CommandType { get; set; }
+        public string GameJoinCode { get; set; }
     }
 }

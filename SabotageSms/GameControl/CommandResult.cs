@@ -1,6 +1,6 @@
-namespace SabotageSms.Models
+namespace SabotageSms.GameControl
 {
-    class CommandResult
+    public class CommandResult
     {
         public bool IsSuccess { get; set; }
         public string ErrorMessage { get; set; }

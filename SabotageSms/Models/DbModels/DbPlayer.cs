@@ -4,18 +4,30 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace SabotageSms.Models.DbModels
 {
     [Table("Player")]
-    public class DbPlayer : Player
+    public class DbPlayer
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        new public long PlayerId { get; set; }
+        public long PlayerId { get; set; }
         
         [MaxLength(50)]
-        new public string PhoneNumber { get; set; }
+        public string PhoneNumber { get; set; }
+        
+        public string Name { get; set;}
         
         [ForeignKey("CurrentGameId")]
         public virtual DbGame CurrentGame { get; set; }
         
-        new public long? CurrentGameId;
+        public long? CurrentGameId { get; set; }
+        
+        public Player ToPlayer() {
+            return new Player()
+            {
+                PlayerId = PlayerId,
+                PhoneNumber = PhoneNumber,
+                Name = Name,
+                CurrentGameId = CurrentGameId
+            };
+        }
     }
 }
