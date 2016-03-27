@@ -8,6 +8,7 @@ namespace SabotageSms.Models.DbModels
     {
         public DbSet<DbPlayer> Players { get; set; }
         public DbSet<DbGame> Games { get; set; }
+        public DbSet<DbGamePlayer> GamePlayers { get; set; }
         public DbSet<DbMessage> Messages { get; set; }
         
         public ApplicationDbContext()
@@ -19,11 +20,11 @@ namespace SabotageSms.Models.DbModels
         
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // Indexes for important lookup fields
             modelBuilder
                 .Entity<DbPlayer>()
                 .HasIndex(p => p.PhoneNumber)
                 .IsUnique(true);
-            
             modelBuilder
                 .Entity<DbGame>()
                 .HasIndex(g => g.JoinCode)
@@ -32,12 +33,6 @@ namespace SabotageSms.Models.DbModels
             // Composite keys for relating players to games
             modelBuilder
                 .Entity<DbGamePlayer>()
-                .HasKey(p => new { p.PlayerId, p.GameId });
-            modelBuilder
-                .Entity<DbGameGoodPlayer>()
-                .HasKey(p => new { p.PlayerId, p.GameId });
-            modelBuilder
-                .Entity<DbGameBadPlayer>()
                 .HasKey(p => new { p.PlayerId, p.GameId });
         }
     }

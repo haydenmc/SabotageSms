@@ -16,5 +16,7 @@ namespace SabotageSms.Models.DbModels
         public virtual DbGame Game { get; set; }
         
         public int TurnOrder { get; set; }
+        
+        public bool IsBad { get; set; }
     }
 }

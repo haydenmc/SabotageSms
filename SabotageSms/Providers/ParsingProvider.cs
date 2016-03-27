@@ -6,9 +6,9 @@ namespace SabotageSms.Providers
 {
     public class ParsingProvider
     {
-        public CommandDetails ParseCommand(Player player, string messageBody)
-        {
-            throw new NotImplementedException();
-        }
+        // public CommandDetails ParseCommand(Player player, string messageBody)
+        // {
+        //     throw new NotImplementedException();
+        // }
     }
 }

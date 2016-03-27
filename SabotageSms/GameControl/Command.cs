@@ -1,6 +1,6 @@
 namespace SabotageSms.GameControl
 {
-    public enum CommandType
+    public enum Command
     {
         Unknown = 0,
         New = 1,
@@ -13,11 +13,5 @@ namespace SabotageSms.GameControl
         MissionCountSuccessFail = 8,
         NewMission = 9,
         GameEnd = 10
-    }
-    
-    public class CommandDetails
-    {
-        public CommandType CommandType { get; set; }
-        public string GameJoinCode { get; set; }
     }
 }

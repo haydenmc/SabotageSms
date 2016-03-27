@@ -18,9 +18,9 @@ namespace SabotageSms.Models.DbModels
         
         public virtual ICollection<DbGamePlayer> GamePlayers { get; set; }
         
-        public virtual ICollection<DbGameGoodPlayer> GoodPlayers { get; set; }
+        public int MissionCount { get; set; }
         
-        public virtual ICollection<DbGameBadPlayer> BadPlayers { get; set; }
+        public int LeaderCount { get; set; }
 
         public GameState CurrentState { get; set; }
 
@@ -37,8 +37,10 @@ namespace SabotageSms.Models.DbModels
                     .OrderBy(gp => gp.TurnOrder)
                     .Select(gp => gp.Player.ToPlayer())
                     .ToList(),
-                GoodPlayers = GoodPlayers?.Select(p => p.Player.ToPlayer()).ToList(),
-                BadPlayers = BadPlayers?.Select(p => p.Player.ToPlayer()).ToList(),
+                MissionCount = MissionCount,
+                LeaderCount = LeaderCount,
+                GoodPlayers = GamePlayers?.Where(p => !p.IsBad).Select(p => p.Player.ToPlayer()).ToList(),
+                BadPlayers = GamePlayers?.Where(p => p.IsBad).Select(p => p.Player.ToPlayer()).ToList(),
                 CurrentState = CurrentState,
                 CreatedTime = CreatedTime,
                 LastActiveTime = LastActiveTime

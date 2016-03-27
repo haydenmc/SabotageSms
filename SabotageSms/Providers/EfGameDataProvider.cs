@@ -59,8 +59,6 @@ namespace SabotageSms.Providers
             var game = _db.Players
                 .Include(p => p.CurrentGame)
                 .Include(p => p.CurrentGame.GamePlayers)
-                .Include(p => p.CurrentGame.GoodPlayers)
-                .Include(p => p.CurrentGame.BadPlayers)
                 .SingleOrDefault(p => p.PlayerId == playerId)
                 .CurrentGame;
             return game?.ToGame();
@@ -101,6 +99,38 @@ namespace SabotageSms.Providers
             }
             player.CurrentGame = game;
             game.GamePlayers.Add(new DbGamePlayer() { Player = player });
+            _db.SaveChanges();
+            return game.ToGame();
+        }
+        
+        public Game SetPlayersGoodBad(long gameId, bool isBad, params long[] playerIds)
+        {
+            var game = _db.Games.SingleOrDefault(g => g.GameId == gameId);
+            if (game == null)
+            {
+                return null;
+            }
+            var gamePlayers = game.GamePlayers.Where(g => playerIds.Contains(g.PlayerId));
+            foreach (var gamePlayer in gamePlayers)
+            {
+                gamePlayer.IsBad = isBad;
+            }
+            _db.SaveChanges();
+            return game.ToGame();
+        }
+        
+        public Game ScrambleTurnOrder(long gameId)
+        {
+            var game = _db.Games.SingleOrDefault(g => g.GameId == gameId);
+            if (game == null)
+            {
+                return null;
+            }
+            var playerOrder = game.GamePlayers.OrderBy(o => Guid.NewGuid()).ToList();
+            for (var i = 0; i < playerOrder.Count; i++)
+            {
+                playerOrder[i].TurnOrder = i;
+            }
             _db.SaveChanges();
             return game.ToGame();
         }
