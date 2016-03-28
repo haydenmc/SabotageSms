@@ -22,7 +22,7 @@ namespace SabotageSms.Models.DbModels
         
         public int LeaderCount { get; set; }
 
-        public GameState CurrentState { get; set; }
+        public string CurrentState { get; set; }
 
         public DateTimeOffset CreatedTime { get; set; }
 

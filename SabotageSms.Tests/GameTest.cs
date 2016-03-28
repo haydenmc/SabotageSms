@@ -37,7 +37,7 @@ namespace SabotageSms.Tests
         }
         
         [Fact]
-        public void FullGameTest()
+        public void FivePlayerGame()
         {
             var serviceProvider = _serviceCollection.BuildServiceProvider();
             using (var db = new ApplicationDbContext(serviceProvider, _contextOptions))
@@ -50,10 +50,7 @@ namespace SabotageSms.Tests
                 
                 // Simulate new game command
                 var gameManager = new GameManager(null, gameDataProvider, smsProvider);
-                var newGameCommandResult = gameManager.Command(playerOne, new CommandDetails() {
-                    CommandType = CommandType.New
-                });
-                Assert.True(newGameCommandResult.IsSuccess);
+                gameManager.ExecuteCommand(playerOne, Command.New);
                 
                 // Fetch the game
                 var game = gameDataProvider.GetPlayerCurrentGame(playerOne.PlayerId);
@@ -63,11 +60,10 @@ namespace SabotageSms.Tests
                 var playerTwo = gameDataProvider.GetOrCreatePlayerByPhoneNumber("18008675310");
                 Assert.Equal(playerTwo.PhoneNumber, "18008675310");
                 playerTwo = gameDataProvider.SetPlayerName(playerTwo.PlayerId, "PooppyGeorge");
-                var joinGameCommandResult = gameManager.Command(playerTwo, new CommandDetails() {
-                    CommandType = CommandType.Join,
-                    GameJoinCode = game.JoinCode
-                });
-                Assert.True(joinGameCommandResult.IsSuccess);
+                gameManager = new GameManager(null, gameDataProvider, smsProvider); // Game is null as this player is not in a game
+                gameManager.ExecuteCommand(playerTwo, Command.Join, game.JoinCode);
+                
+                // Fetch the game, verify players
                 game = gameDataProvider.GetGameById(game.GameId);
                 Assert.NotNull(game);
                 Assert.True(game.Players.Where(p => p.PhoneNumber == "18008675309").Count() > 0);
@@ -78,17 +74,15 @@ namespace SabotageSms.Tests
                 {
                     var p = gameDataProvider.GetOrCreatePlayerByPhoneNumber("1800867531" + (i + 1));
                     p = gameDataProvider.SetPlayerName(p.PlayerId, "TestP" + (i + 1));
-                    gameManager.Command(p, new CommandDetails() {
-                        CommandType = CommandType.Join,
-                        GameJoinCode = game.JoinCode
-                    });
+                    gameManager = new GameManager(null, gameDataProvider, smsProvider);
+                    gameManager.ExecuteCommand(p, Command.Join, game.JoinCode);
                 }
                 
                 // Start the game!
                 game = gameDataProvider.GetGameById(game.GameId);
                 gameManager = new GameManager(game, gameDataProvider, smsProvider);
-                var startResult = gameManager.Command(playerOne, new CommandDetails() { CommandType = CommandType.StartGame });
-                Assert.True(startResult.IsSuccess);
+                gameManager.ExecuteCommand(playerOne, Command.StartGame);
+                Assert.True(false);
             }
         }
     }

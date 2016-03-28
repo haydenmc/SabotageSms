@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.Data.Entity;
+using SabotageSms.GameControl.States;
 using SabotageSms.Models;
 using SabotageSms.Models.DbModels;
 
@@ -73,7 +74,7 @@ namespace SabotageSms.Providers
             }
             var newGame = new DbGame() {
                 JoinCode = joinCodeStringBuilder.ToString(),
-                CurrentState = GameState.Lobby,
+                CurrentState = typeof(LobbyState).Name,
                 GamePlayers = new List<DbGamePlayer>()
                 {
                     new DbGamePlayer() { PlayerId = playerId }
@@ -131,6 +132,18 @@ namespace SabotageSms.Providers
             {
                 playerOrder[i].TurnOrder = i;
             }
+            _db.SaveChanges();
+            return game.ToGame();
+        }
+        
+        public Game SetGameState(long gameId, string newState)
+        {
+            var game = _db.Games.SingleOrDefault(g => g.GameId == gameId);
+            if (game == null)
+            {
+                return null;
+            }
+            game.CurrentState = newState;
             _db.SaveChanges();
             return game.ToGame();
         }

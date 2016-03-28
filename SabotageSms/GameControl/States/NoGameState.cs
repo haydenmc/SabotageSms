@@ -30,7 +30,7 @@ namespace SabotageSms.GameControl.States
                     SmsPlayer(fromPlayer, "⚠ We couldn't find that game.");
                     return this;
                 }
-                if (game.CurrentState != GameState.Lobby)
+                if (game.CurrentState != typeof(LobbyState).Name)
                 {
                     SmsPlayer(fromPlayer, "⚠ You can't join a game in progress.");
                     return this;
@@ -40,6 +40,7 @@ namespace SabotageSms.GameControl.States
                     String.Format("✔ You have joined the game! There are {0} players currently in this game.", _game.Players.Count));
                 SmsAllExcept(fromPlayer,
                     String.Format("🙂 {0} has joined the game! There are {1} players currently in this game.", fromPlayer.Name, _game.Players.Count));
+                return new LobbyState(_gameDataProvider, _smsProvider, _game, this);
             }
             return this;
         }

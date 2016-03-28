@@ -13,5 +13,6 @@ namespace SabotageSms.Providers
         Game JoinPlayerToGame(long playerId, long gameId);
         Game SetPlayersGoodBad(long gameId, bool isBad, params long[] playerIds);
         Game ScrambleTurnOrder(long gameId);
+        Game SetGameState(long gameId, string newState);
     }
 }

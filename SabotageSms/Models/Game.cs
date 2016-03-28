@@ -2,17 +2,7 @@ using System;
 using System.Collections.Generic;
 
 namespace SabotageSms.Models
-{
-    public enum GameState
-    {
-        Any = 0,
-        Lobby = 1,
-        Roster = 2,
-        RosterApproval = 3,
-        Mission = 4,
-        GameEnd = 5
-    }
-    
+{   
     public class Game
     {
         public long GameId { get; set; }
@@ -22,7 +12,7 @@ namespace SabotageSms.Models
         public int LeaderCount { get; set; }
         public ICollection<Player> GoodPlayers { get; set; }
         public ICollection<Player> BadPlayers { get; set; }
-        public GameState CurrentState { get; set; }
+        public string CurrentState { get; set; }
         public DateTimeOffset CreatedTime { get; set; }
         public DateTimeOffset LastActiveTime { get; set; }
     }

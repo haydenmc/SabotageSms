@@ -35,14 +35,27 @@ namespace SabotageSms.GameControl
             _game = game;
             _gameDataProvider = gameDataProvider;
             _smsProvider = smsProvider;
-            // TODO: Populate correct state here
+            // Instantiate proper game state based on string from database
             _currentState = new NoGameState(_gameDataProvider, _smsProvider, _game);
+            if (_game != null) {
+                var stateName = _game.CurrentState;
+                var type = Type.GetType("SabotageSms.GameControl.States." + stateName);
+                if (type != null)
+                {
+                    // Ensure params aligns with AbstractState constructor
+                    _currentState = (AbstractState) Activator.CreateInstance(type, _gameDataProvider, _smsProvider, _game, _currentState);
+                }
+            }
         }
         
-        public void ExecuteCommand(Player fromPlayer, Command command, object parameters)
+        public void ExecuteCommand(Player fromPlayer, Command command, object parameters = null)
         {
             var resultState = _currentState.ProcessCommand(fromPlayer, command, parameters);
             // TODO: Persist new result state in DB
+            if (_game != null)
+            {
+                _gameDataProvider.SetGameState(_game.GameId, resultState.GetType().Name);
+            }
         }
     }
 }
