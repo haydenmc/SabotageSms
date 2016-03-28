@@ -18,6 +18,9 @@ namespace SabotageSms.Models.DbModels
         
         public virtual ICollection<DbGamePlayer> GamePlayers { get; set; }
         
+        [InverseProperty("Game")]
+        public virtual ICollection<DbRound> Rounds { get; set; }
+        
         public int MissionCount { get; set; }
         
         public int LeaderCount { get; set; }
@@ -37,7 +40,7 @@ namespace SabotageSms.Models.DbModels
                     .OrderBy(gp => gp.TurnOrder)
                     .Select(gp => gp.Player.ToPlayer())
                     .ToList(),
-                MissionCount = MissionCount,
+                Rounds = Rounds?.OrderBy(r => r.RoundNumber).Select(r => r.ToRound()).ToList(),
                 LeaderCount = LeaderCount,
                 GoodPlayers = GamePlayers?.Where(p => !p.IsBad).Select(p => p.Player.ToPlayer()).ToList(),
                 BadPlayers = GamePlayers?.Where(p => p.IsBad).Select(p => p.Player.ToPlayer()).ToList(),

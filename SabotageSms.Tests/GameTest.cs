@@ -82,6 +82,48 @@ namespace SabotageSms.Tests
                 game = gameDataProvider.GetGameById(game.GameId);
                 gameManager = new GameManager(game, gameDataProvider, smsProvider);
                 gameManager.ExecuteCommand(playerOne, Command.StartGame);
+                
+                // Select mission peeps
+                game = gameDataProvider.GetGameById(game.GameId);
+                var leader = game.Players[game.LeaderCount % game.Players.Count];
+                gameManager = new GameManager(game, gameDataProvider, smsProvider);
+                gameManager.ExecuteCommand(leader, Command.SelectRoster, new string[] {
+                    "PooppyGeorge",
+                    "TestP2",
+                    "TaylorSwift"
+                });
+                
+                // Select a wrong number
+                game = gameDataProvider.GetGameById(game.GameId);
+                gameManager = new GameManager(game, gameDataProvider, smsProvider);
+                gameManager.ExecuteCommand(leader, Command.SelectRoster, new string[] {
+                    "PooppyGeorge"
+                });
+                
+                // Select a non-existing player
+                game = gameDataProvider.GetGameById(game.GameId);
+                gameManager = new GameManager(game, gameDataProvider, smsProvider);
+                gameManager.ExecuteCommand(leader, Command.SelectRoster, new string[] {
+                    "DoctorButt",
+                    "TestP2",
+                    "TaylorSwift"
+                });
+                
+                // Change it up
+                game = gameDataProvider.GetGameById(game.GameId);
+                gameManager = new GameManager(game, gameDataProvider, smsProvider);
+                gameManager.ExecuteCommand(leader, Command.SelectRoster, new string[] {
+                    "TestP1",
+                    "TestP2",
+                    "TestP3"
+                });
+                
+                // Confirm
+                game = gameDataProvider.GetGameById(game.GameId);
+                gameManager = new GameManager(game, gameDataProvider, smsProvider);
+                gameManager.ExecuteCommand(leader, Command.ConfirmRoster);
+                
+                // Make this thing fail so I can see the output (shake fist)
                 Assert.True(false);
             }
         }

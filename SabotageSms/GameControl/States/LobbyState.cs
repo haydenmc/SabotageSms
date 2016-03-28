@@ -38,11 +38,11 @@ namespace SabotageSms.GameControl.States
                     }
                     
                     // Scramble turn order
-                    _gameDataProvider.ScrambleTurnOrder(_game.GameId);
+                    _game = _gameDataProvider.ScrambleTurnOrder(_game.GameId);
                     
                     // Advance to roster state
                     var rosterState = new RosterState(_gameDataProvider, _smsProvider, _game, _resetState);
-                    rosterState.AnnounceStart();
+                    rosterState.NewRound();
                     return rosterState;
                 }
                 else
@@ -53,6 +53,9 @@ namespace SabotageSms.GameControl.States
                             GameManager.MaxPlayers));
                 }
             }
+            
+            // Unimplemented command for this state.
+            SmsPlayer(fromPlayer, "⚠ You can't do that right now.");
             return this;
         }
     }

@@ -8,6 +8,7 @@ namespace SabotageSms.Models.DbModels
     {
         public DbSet<DbPlayer> Players { get; set; }
         public DbSet<DbGame> Games { get; set; }
+        public DbSet<DbRound> Rounds { get; set; }
         public DbSet<DbGamePlayer> GamePlayers { get; set; }
         public DbSet<DbMessage> Messages { get; set; }
         

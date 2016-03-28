@@ -77,8 +77,13 @@ namespace SabotageSms.Providers
                 CurrentState = typeof(LobbyState).Name,
                 GamePlayers = new List<DbGamePlayer>()
                 {
-                    new DbGamePlayer() { PlayerId = playerId }
-                }
+                    new DbGamePlayer()
+                    {
+                        PlayerId = playerId,
+                        IsBad = false
+                    }
+                },
+                Rounds = new List<DbRound>()
             };
             _db.Players.SingleOrDefault(p => p.PlayerId == playerId).CurrentGame = newGame;
             _db.Games.Add(newGame);
@@ -99,7 +104,13 @@ namespace SabotageSms.Providers
                 return null;
             }
             player.CurrentGame = game;
-            game.GamePlayers.Add(new DbGamePlayer() { Player = player });
+            game.GamePlayers.Add(
+                new DbGamePlayer()
+                {
+                    Player = player,
+                    IsBad = false
+                }
+            );
             _db.SaveChanges();
             return game.ToGame();
         }
@@ -146,6 +157,55 @@ namespace SabotageSms.Providers
             game.CurrentState = newState;
             _db.SaveChanges();
             return game.ToGame();
+        }
+        
+        public Player GetGamePlayerByName(long gameId, string playerName)
+        {
+            var gamePlayer = _db.GamePlayers
+                .SingleOrDefault(g =>
+                    g.Player.Name.ToUpper() == playerName.ToUpper()
+                    && g.GameId == gameId
+                );
+            return gamePlayer?.Player.ToPlayer();
+        }
+        
+        public Game AddRound(long gameId)
+        {
+            var game = _db.Games.SingleOrDefault(g => g.GameId == gameId);
+            if (game == null)
+            {
+                return null;
+            }
+            game.Rounds.Add(new DbRound()
+            {
+                RoundNumber = game.Rounds.Count + 1,
+                SelectedPlayers = new List<DbPlayer>(),
+                ApprovingPlayers = new List<DbPlayer>(),
+                RejectingPlayers = new List<DbPlayer>(),
+                PassingPlayers = new List<DbPlayer>(),
+                FailingPlayers = new List<DbPlayer>(),
+            });
+            _db.SaveChanges();
+            return game.ToGame();
+        }
+        
+        public Game SetRoundSelectedPlayers(long roundId, long[] playerIds)
+        {
+            var round = _db.Rounds
+                .Include(r => r.SelectedPlayers)
+                .Include(r => r.Game)
+                .SingleOrDefault(g => g.RoundId == roundId);
+            if (round == null)
+            {
+                return null;
+            }
+            round.SelectedPlayers.Clear();
+            for (var i = 0; i < playerIds.Length; i++)
+            {
+                round.SelectedPlayers.Add(_db.Players.SingleOrDefault(p => p.PlayerId == playerIds[i]));
+            }
+            _db.SaveChanges();
+            return round.Game.ToGame();
         }
     }
 }

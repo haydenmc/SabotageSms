@@ -42,6 +42,9 @@ namespace SabotageSms.GameControl.States
                     String.Format("🙂 {0} has joined the game! There are {1} players currently in this game.", fromPlayer.Name, _game.Players.Count));
                 return new LobbyState(_gameDataProvider, _smsProvider, _game, this);
             }
+            
+            // Unimplemented command for this state.
+            SmsPlayer(fromPlayer, "⚠ You can't do that right now.");
             return this;
         }
     }

@@ -14,5 +14,8 @@ namespace SabotageSms.Providers
         Game SetPlayersGoodBad(long gameId, bool isBad, params long[] playerIds);
         Game ScrambleTurnOrder(long gameId);
         Game SetGameState(long gameId, string newState);
+        Player GetGamePlayerByName(long gameId, string playerName);
+        Game AddRound(long gameId);
+        Game SetRoundSelectedPlayers(long roundId, long[] playerIds);
     }
 }

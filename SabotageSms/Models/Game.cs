@@ -8,7 +8,7 @@ namespace SabotageSms.Models
         public long GameId { get; set; }
         public string JoinCode { get; set; }
         public IList<Player> Players { get; set; }
-        public int MissionCount { get; set; }
+        public IList<Round> Rounds { get; set; }
         public int LeaderCount { get; set; }
         public ICollection<Player> GoodPlayers { get; set; }
         public ICollection<Player> BadPlayers { get; set; }
