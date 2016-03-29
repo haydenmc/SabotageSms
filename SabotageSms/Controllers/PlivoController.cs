@@ -16,11 +16,13 @@ namespace SabotageSms.Controllers
     public class PlivoController : Controller
     {
         private IGameDataProvider _gameDataProvider { get; set; }
+        private ParsingProvider _parsingProvider { get; set; }
         private ISmsProvider _smsProvider { get; set; }
         private IConfigurationRoot _configuration { get; set; }
         
-        public PlivoController(IGameDataProvider gameDataProvider, ISmsProvider smsProvider, IConfigurationRoot configuration) {
+        public PlivoController(IGameDataProvider gameDataProvider, ParsingProvider parsingProvider, ISmsProvider smsProvider, IConfigurationRoot configuration) {
             _gameDataProvider = gameDataProvider;
+            _parsingProvider = parsingProvider;
             _smsProvider = smsProvider;
             _configuration = configuration;
         }
