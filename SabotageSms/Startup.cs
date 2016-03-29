@@ -39,7 +39,8 @@ namespace SabotageSms
             services.AddSingleton<ISmsProvider, PlivoSmsProvider>();
             services.AddSingleton<ParsingProvider, ParsingProvider>();
             services.AddScoped<IGameDataProvider, EfGameDataProvider>();
-            services.AddMvc();
+            services.AddMvc()
+                .AddXmlSerializerFormatters();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -49,10 +50,10 @@ namespace SabotageSms
             app.UseMvcWithDefaultRoute();
             
             using (var serviceScope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>()
-                        .CreateScope())
+                .CreateScope())
             {
                 serviceScope.ServiceProvider.GetService<ApplicationDbContext>()
-                        .Database.Migrate();
+                    .Database.Migrate();
             }
         }
 

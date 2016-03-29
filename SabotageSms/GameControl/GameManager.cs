@@ -13,6 +13,10 @@ namespace SabotageSms.GameControl
         
         public const int MaxPlayers = 10;
         
+        public const int MaxRejectionCount = 5;
+        
+        public const int WinCount = 3;
+        
         public static readonly int[,] MissionPlayerNumber = new int[,] 
 		{
 			{2, 2, 2, 3, 3, 3}, 
@@ -20,6 +24,15 @@ namespace SabotageSms.GameControl
 			{2, 4, 3, 4, 4, 4}, 
 			{3, 3, 4, 5, 5, 5}, 
 			{3, 4, 4, 5, 5, 5}
+		};
+        
+        public static readonly int[,] MissionRequiredFailCount = new int[,] 
+		{
+			{1, 1, 1, 1, 1, 1}, 
+			{1, 1, 1, 1, 1, 1}, 
+			{1, 1, 1, 1, 1, 1}, 
+			{1, 1, 2, 2, 2, 2}, 
+			{1, 1, 1, 1, 1, 1}
 		};
         
         private AbstractState _currentState { get; set; }

@@ -8,11 +8,9 @@ namespace SabotageSms.GameControl
         StartGame = 3,
         SelectRoster = 4,
         ConfirmRoster = 5,
-        RosterCountVote = 6,
-        RejectRoster = 7,
-        ApproveRoster = 8,
-        MissionCountSuccessFail = 9,
-        NewMission = 10,
-        GameEnd = 11
+        RejectRoster = 6,
+        ApproveRoster = 7,
+        PassMission = 8,
+        FailMission = 9
     }
 }

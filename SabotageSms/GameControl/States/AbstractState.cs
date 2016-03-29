@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using SabotageSms.Models;
 using SabotageSms.Providers;
@@ -49,15 +50,20 @@ namespace SabotageSms.GameControl.States
             }
         }
         
-        protected void SmsAllExcept(Player player, string body)
+        protected void SmsAllExcept(IEnumerable<Player> players, string body)
         {
             for (var i = 0; i < _game.Players.Count; i++)
             {
-                if (_game.Players[i].PlayerId != player.PlayerId)
+                if (players.Where(p => p.PlayerId == _game.Players[i].PlayerId).Count() == 0)
                 {
                     _smsProvider.SendSms(_game.Players[i].PhoneNumber, body);
                 }
             }
+        }
+        
+        protected void SmsAllExcept(Player player, string body)
+        {
+            SmsAllExcept(new Player[] { player }, body);
         }
         
         protected void SmsAllExcept(long playerId, string body)

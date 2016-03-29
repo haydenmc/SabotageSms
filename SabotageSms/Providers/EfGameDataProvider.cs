@@ -207,5 +207,155 @@ namespace SabotageSms.Providers
             _db.SaveChanges();
             return round.Game.ToGame();
         }
+        
+        public Game SetRoundPlayerAsApproving(long roundId, long playerId, bool isApproving)
+        {
+            var round = _db.Rounds
+                .Include(r => r.Game)
+                .Include(r => r.Game.GamePlayers)
+                .ThenInclude(gp => gp.Player)
+                .SingleOrDefault(r => r.RoundId == roundId);
+            if (round == null)
+            {
+                return null;
+            }
+            var player = round.Game.GamePlayers.SingleOrDefault(p => p.PlayerId == playerId)?.Player;
+            if (player == null)
+            {
+                return null;
+            }
+            if (isApproving)
+            {
+                // Remove from rejecting
+                if (round.RejectingPlayers.SingleOrDefault(p => p.PlayerId == playerId) != null)
+                {
+                    round.RejectingPlayers.Remove(player);
+                }
+                // Add to approving
+                var approvalRecord = round.ApprovingPlayers.SingleOrDefault(p => p.PlayerId == playerId);
+                if (approvalRecord == null)
+                {
+                    round.ApprovingPlayers.Add(player);
+                }
+            }
+            else
+            {
+                // Remove from approving
+                if (round.ApprovingPlayers.SingleOrDefault(p => p.PlayerId == playerId) != null)
+                {
+                    round.ApprovingPlayers.Remove(player);
+                }
+                // Add to rejecting
+                var rejectionRecord = round.RejectingPlayers.SingleOrDefault(p => p.PlayerId == playerId);
+                if (rejectionRecord == null)
+                {
+                    round.RejectingPlayers.Add(player);
+                }
+            }
+            _db.SaveChanges();
+            return round.Game.ToGame();
+        }
+        
+        public Game ClearRoundApprovals(long roundId)
+        {
+            var round = _db.Rounds
+                .Include(r => r.Game)
+                .SingleOrDefault(r => r.RoundId == roundId);
+            if (round == null)
+            {
+                return null;
+            }
+            round.ApprovingPlayers.Clear();
+            round.RejectingPlayers.Clear();
+            _db.SaveChanges();
+            return round.Game.ToGame();
+        }
+        
+        public Game AdvanceGameLeader(long gameId)
+        {
+            var game = _db.Games.SingleOrDefault(g => g.GameId == gameId);
+            if (game == null)
+            {
+                return null;
+            }
+            game.LeaderCount++;
+            _db.SaveChanges();
+            return game.ToGame();
+        }
+        
+        public Game SetRoundRejectedCount(long roundId, int rejectedCount)
+        {
+            var round = _db.Rounds
+                .Include(r => r.Game)
+                .SingleOrDefault(r => r.RoundId == roundId);
+            if (round == null)
+            {
+                return null;
+            }
+            round.RejectedCount = rejectedCount;
+            _db.SaveChanges();
+            return round.Game.ToGame();
+        }
+        
+        public Game SetRoundPlayerPassFail(long roundId, long playerId, bool isPass)
+        {
+            var round = _db.Rounds
+                .Include(r => r.Game)
+                .Include(r => r.Game.GamePlayers)
+                .ThenInclude(gp => gp.Player)
+                .SingleOrDefault(r => r.RoundId == roundId);
+            if (round == null)
+            {
+                return null;
+            }
+            var player = round.Game.GamePlayers.SingleOrDefault(p => p.PlayerId == playerId)?.Player;
+            if (player == null)
+            {
+                return null;
+            }
+            if (isPass)
+            {
+                // Remove from fail
+                if (round.FailingPlayers.SingleOrDefault(p => p.PlayerId == playerId) != null)
+                {
+                    round.FailingPlayers.Remove(player);
+                }
+                // Add to pass
+                var passRecord = round.PassingPlayers.SingleOrDefault(p => p.PlayerId == playerId);
+                if (passRecord == null)
+                {
+                    round.PassingPlayers.Add(player);
+                }
+            }
+            else
+            {
+                // Remove from pass
+                if (round.PassingPlayers.SingleOrDefault(p => p.PlayerId == playerId) != null)
+                {
+                    round.PassingPlayers.Remove(player);
+                }
+                // Add to fail
+                var failRecord = round.FailingPlayers.SingleOrDefault(p => p.PlayerId == playerId);
+                if (failRecord == null)
+                {
+                    round.FailingPlayers.Add(player);
+                }
+            }
+            _db.SaveChanges();
+            return round.Game.ToGame();
+        }
+        
+        public Game SetRoundBadWins(long roundId, bool badWins)
+        {
+            var round = _db.Rounds
+                .SingleOrDefault(r => r.RoundId == roundId);
+            if (round == null)
+            {
+                return null;
+            }
+            round.BadWins = badWins;
+            _db.SaveChanges();
+            return round.Game.ToGame();
+        }
     }
 }

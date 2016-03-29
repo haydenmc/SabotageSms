@@ -22,6 +22,8 @@ namespace SabotageSms.Models.DbModels
         
         public int RejectedCount { get; set; }
         
+        public bool BadWins { get; set; }
+        
         public virtual ICollection<DbPlayer> SelectedPlayers { get; set; }
         
         public virtual ICollection<DbPlayer> ApprovingPlayers { get; set; }
@@ -40,6 +42,7 @@ namespace SabotageSms.Models.DbModels
                 GameId = GameId,
                 RoundNumber = RoundNumber,
                 RejectedCount = RejectedCount,
+                BadWins = BadWins,
                 SelectedPlayers = SelectedPlayers.Select(p => p.ToPlayer()).ToList(),
                 ApprovingPlayers = ApprovingPlayers.Select(p => p.ToPlayer()).ToList(),
                 RejectingPlayers = RejectingPlayers.Select(p => p.ToPlayer()).ToList(),

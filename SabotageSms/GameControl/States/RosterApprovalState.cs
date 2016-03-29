@@ -19,6 +19,62 @@ namespace SabotageSms.GameControl.States
 
         public override AbstractState ProcessCommand(Player fromPlayer, Command command, object parameters)
         {
+            if (command == Command.ApproveRoster || command == Command.RejectRoster)
+            {
+                var round = _game.Rounds.Last();
+                // Mark this player as approving/rejecting
+                _game = _gameDataProvider.SetRoundPlayerAsApproving(round.RoundId,
+                    fromPlayer.PlayerId,
+                    command == Command.ApproveRoster);
+                
+                // Check if all the votes are in.
+                round = _game.Rounds.Last();
+                if ((round.ApprovingPlayers.Count + round.RejectingPlayers.Count) >= _game.Players.Count)
+                {
+                    var playerVoteSummary = String.Format("✔: {0}\n✖: {1}",
+                        string.Join(", ", round.ApprovingPlayers.Select(p => p.Name)),
+                        string.Join(", ", round.RejectingPlayers.Select(p => p.Name)));
+                    if (round.ApprovingPlayers.Count > round.RejectingPlayers.Count)
+                    {
+                        // Mission is approved.
+                        SmsAll(String.Format("MISSION APPROVED.\n{0}", playerVoteSummary));
+                        // Advance to mission state.
+                        var missionState = new MissionState(_gameDataProvider, _smsProvider, _game, _resetState);
+                        missionState.Announce();
+                        return missionState;
+                    }
+                    else
+                    {
+                        // Mission is rejected.
+                        var numRejections = round.RejectedCount + 1;
+                        _game = _gameDataProvider.SetRoundRejectedCount(round.RoundId, numRejections);
+                        if (numRejections > GameManager.MaxRejectionCount)
+                        {
+                            // TODO: bad player victory
+                        }
+                        else
+                        {
+                            SmsAll(String.Format("MISSION REJECTED. {0} rejections remain.\n{1}",
+                                GameManager.MaxRejectionCount - numRejections,
+                                playerVoteSummary));
+                            // Clear approvals and advance to next leader
+                            _game = _gameDataProvider.ClearRoundApprovals(round.RoundId);
+                            _game = _gameDataProvider.AdvanceGameLeader(_game.GameId);
+                            // Advance to roster state
+                            var rosterState = new RosterState(_gameDataProvider, _smsProvider, _game, _resetState);
+                            rosterState.Announce();
+                            return rosterState;
+                        }
+                    }
+                }
+                else // Not all votes tallied yet
+                {
+                    SmsPlayer(fromPlayer,
+                        String.Format("Response recorded. Still waiting on {0} players.", 
+                            _game.Players.Count - (round.ApprovingPlayers.Count + round.RejectingPlayers.Count)));
+                    return this;
+                }
+            }
             // Unimplemented command for this state.
             SmsPlayer(fromPlayer, "⚠ You can't do that right now.");
             return this;

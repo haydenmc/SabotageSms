@@ -8,6 +8,7 @@ namespace SabotageSms.Models
         public long GameId { get; set; }
         public int RoundNumber { get; set; }
         public int RejectedCount { get; set; }
+        public bool BadWins { get; set; }
         public ICollection<Player> SelectedPlayers { get; set; }
         public ICollection<Player> ApprovingPlayers { get; set; }
         public ICollection<Player> RejectingPlayers { get; set; }

@@ -11,20 +11,25 @@ namespace SabotageSms.GameControl.States
             : base(gameDataProvider, smsProvider, game, resetState)
         {}
         
-        public void NewRound()
+        public void Announce()
         {
+            // Check required fail count
+            var failCountWarning = "";
+            var missionFailCount = GameManager.MissionRequiredFailCount[_game.Rounds.Count - 1, _game.Players.Count - GameManager.MinPlayers];
+            if (missionFailCount != 1)
+            {
+                failCountWarning = String.Format("\n*{0} fails required this mission.", missionFailCount);
+            }
+            
             // Grab the current mission leader
             var leader = _game.Players[_game.LeaderCount % _game.Players.Count];
             
-            // Add new round
-            _game = _gameDataProvider.AddRound(_game.GameId);
-            
             // Announce start of roster state
-            var missionPlayerCount = GameManager.MissionPlayerNumber[_game.Rounds.Count - 1, _game.Players.Count - 1];
+            var missionPlayerCount = GameManager.MissionPlayerNumber[_game.Rounds.Count - 1, _game.Players.Count - GameManager.MinPlayers];
             SmsAllExcept(leader,
-                String.Format("ROUND {0}: {1} is the mission leader. They will now select {2} players for this mission.", _game.Rounds.Count, leader.Name, missionPlayerCount));
+                String.Format("ROUND {0}: {1} leader. {2} players required.{3}", _game.Rounds.Count, leader.Name, missionPlayerCount, failCountWarning));
             SmsPlayer(leader,
-                String.Format("ROUND {0}: You are the mission leader. Please select {1} players for this mission.", _game.Rounds.Count, missionPlayerCount));
+                String.Format("ROUND {0}: You are the leader. Select {1} players.{2}", _game.Rounds.Count, missionPlayerCount, failCountWarning));
         }
 
         public override AbstractState ProcessCommand(Player fromPlayer, Command command, object parameters)
@@ -43,7 +48,7 @@ namespace SabotageSms.GameControl.States
                 var players = parameters as string[];
                 
                 // Make sure we have the right number of players
-                var missionPlayerCount = GameManager.MissionPlayerNumber[_game.Rounds.Count - 1, _game.Players.Count - 1];
+                var missionPlayerCount = GameManager.MissionPlayerNumber[_game.Rounds.Count - 1, _game.Players.Count - GameManager.MinPlayers];
                 if (players.Length != missionPlayerCount)
                 {
                     SmsPlayer(fromPlayer,

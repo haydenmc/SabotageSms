@@ -17,5 +17,11 @@ namespace SabotageSms.Providers
         Player GetGamePlayerByName(long gameId, string playerName);
         Game AddRound(long gameId);
         Game SetRoundSelectedPlayers(long roundId, long[] playerIds);
+        Game SetRoundPlayerAsApproving(long roundId, long playerId, bool isApproving);
+        Game ClearRoundApprovals(long roundId);
+        Game AdvanceGameLeader(long gameId);
+        Game SetRoundRejectedCount(long roundId, int rejectedCount);
+        Game SetRoundPlayerPassFail(long roundId, long playerId, bool isPass);
+        Game SetRoundBadWins(long roundId, bool badWins);
     }
 }

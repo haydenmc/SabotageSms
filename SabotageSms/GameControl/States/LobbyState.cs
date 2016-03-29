@@ -21,18 +21,18 @@ namespace SabotageSms.GameControl.States
                 {
                     // Assign roles
                     var numBadPlayers = (int)Math.Round(Math.Sqrt(2 * (_game.Players.Count - 3)));
-                    var randomPlayers = _game.Players.OrderBy(x => Guid.NewGuid());
+                    var randomPlayers = _game.Players.OrderBy(x => Guid.NewGuid()).ToList();
                     var badPlayers = randomPlayers.Take(numBadPlayers);
                     var goodPlayers = randomPlayers.Skip(numBadPlayers);
                     _game = _gameDataProvider.SetPlayersGoodBad(_game.GameId, true, badPlayers.Select(p => p.PlayerId).ToArray());
                     _game = _gameDataProvider.SetPlayersGoodBad(_game.GameId, false, goodPlayers.Select(p => p.PlayerId).ToArray());
                     
                     // Inform each player of their role
-                    foreach (var player in badPlayers)
+                    foreach (var player in _game.BadPlayers)
                     {
                         SmsPlayer(player, "👿 You are a bad player!");
                     }
-                    foreach (var player in goodPlayers)
+                    foreach (var player in _game.GoodPlayers)
                     {
                         SmsPlayer(player, "😎 You are a good player!");
                     }
@@ -40,9 +40,12 @@ namespace SabotageSms.GameControl.States
                     // Scramble turn order
                     _game = _gameDataProvider.ScrambleTurnOrder(_game.GameId);
                     
+                    // Add new round
+                    _game = _gameDataProvider.AddRound(_game.GameId);
+                    
                     // Advance to roster state
                     var rosterState = new RosterState(_gameDataProvider, _smsProvider, _game, _resetState);
-                    rosterState.NewRound();
+                    rosterState.Announce();
                     return rosterState;
                 }
                 else
