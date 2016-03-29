@@ -9,6 +9,8 @@ namespace SabotageSms.GameControl
 {
     public class GameManager
     {
+        public const int MaxNameLength = 10;
+        
         public const int MinPlayers = 5;
         
         public const int MaxPlayers = 10;

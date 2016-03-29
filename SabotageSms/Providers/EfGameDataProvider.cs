@@ -38,8 +38,8 @@ namespace SabotageSms.Providers
                 {
                     PhoneNumber = phoneNumber
                 };
+                _db.Players.Add(player);
             }
-            _db.Players.Add(player);
             _db.SaveChanges();
             return player.ToPlayer();
         }

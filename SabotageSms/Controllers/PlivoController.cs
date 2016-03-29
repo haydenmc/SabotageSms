@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
 using Microsoft.Extensions.Configuration;
+using SabotageSms.GameControl;
 using SabotageSms.Models;
 using SabotageSms.Models.Plivo;
 using SabotageSms.Providers;
@@ -27,22 +29,36 @@ namespace SabotageSms.Controllers
             _configuration = configuration;
         }
         
-        // GET: api/values
-        [HttpGet]
         [HttpPost]
-        public async Task<PlivoResponseModel> ReceiveSms(
-            [FromQuery] string From,
-            [FromQuery] string To,
-            [FromQuery] string Type,
-            [FromQuery] string Text,
-            [FromQuery] string MessageUUID)
+        [Route("")]
+        public async Task<PlivoResponseModel> ReceiveSms(PlivoIncomingMessageModel incomingSms)
         {
-            try {
-                await _smsProvider.SendSms(From, "We got your text!\n" + Text);
-                return new PlivoResponseModel();
-            } catch (Exception) {
+            // Look up the player
+            var player = _gameDataProvider.GetOrCreatePlayerByPhoneNumber(incomingSms.From);
+            var parsedCommand = _parsingProvider.ParseCommand(player, incomingSms.Text);
+            
+            // TODO: This shouldn't be the SMS controller's responsibility...
+            if (parsedCommand.Command == Command.Name)
+            {
+                var requestedName = parsedCommand.Parameters as string;
+                var assignedName = new Regex("[^a-zA-Z]").Replace(requestedName, "");
+                if (assignedName.Length > GameManager.MaxNameLength) {
+                    assignedName = assignedName.Substring(0, GameManager.MaxNameLength);
+                }
+                _gameDataProvider.SetPlayerName(player.PlayerId, assignedName);
+                await _smsProvider.SendSms(player.PhoneNumber,
+                    String.Format("Your name has been set to '{0}'.", assignedName));
                 return new PlivoResponseModel();
             }
+            // If they don't have a name, we need to ask them to set one
+            // TODO: This shouldn't be the SMS controller's responsibility...
+            if (player.Name == null || player.Name.Length <= 0)
+            {
+                await _smsProvider.SendSms(player.PhoneNumber,
+                    "Hi! Before you start, you need to set a name. Please reply with 'Name YOURNAMEHERE'.");
+                return new PlivoResponseModel();
+            }
+            return new PlivoResponseModel();
         }
     }
 }

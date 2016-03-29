@@ -11,6 +11,7 @@ namespace SabotageSms.GameControl
         RejectRoster = 6,
         ApproveRoster = 7,
         PassMission = 8,
-        FailMission = 9
+        FailMission = 9,
+        Name = 10
     }
 }
