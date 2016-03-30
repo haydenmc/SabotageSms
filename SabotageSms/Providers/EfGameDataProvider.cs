@@ -22,7 +22,10 @@ namespace SabotageSms.Providers
         
         public Game GetGameById(long gameId)
         {
-            return _db.Games.SingleOrDefault(g => g.GameId == gameId)?.ToGame();
+            return _db.Games
+                .Include(g => g.GamePlayers)
+                .ThenInclude(gp => gp.Player)
+                .SingleOrDefault(g => g.GameId == gameId)?.ToGame();
         }
         
         public Game GetGameByJoinCode(string joinCode)
@@ -59,7 +62,8 @@ namespace SabotageSms.Providers
         {
             var game = _db.Players
                 .Include(p => p.CurrentGame)
-                .Include(p => p.CurrentGame.GamePlayers)
+                .ThenInclude(cg => cg.GamePlayers)
+                .ThenInclude(cgp => cgp.Player)
                 .SingleOrDefault(p => p.PlayerId == playerId)
                 .CurrentGame;
             return game?.ToGame();
@@ -67,6 +71,11 @@ namespace SabotageSms.Providers
         
         public Game CreateNewGame(long playerId)
         {
+            var player = _db.Players.SingleOrDefault(p => p.PlayerId == playerId);
+            if (player == null) 
+            {
+                return null;
+            }
             var random = new Random((int)DateTime.Now.Ticks);
             var joinCodeStringBuilder = new StringBuilder();
             for (var i = 0; i < _joinCodeLength; i++) {
@@ -79,7 +88,7 @@ namespace SabotageSms.Providers
                 {
                     new DbGamePlayer()
                     {
-                        PlayerId = playerId,
+                        Player = player,
                         IsBad = false
                     }
                 },

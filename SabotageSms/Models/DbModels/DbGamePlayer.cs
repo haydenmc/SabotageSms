@@ -13,6 +13,7 @@ namespace SabotageSms.Models.DbModels
         public long GameId { get; set; }
         
         [ForeignKey("GameId")]
+        [InverseProperty("GamePlayers")]
         public virtual DbGame Game { get; set; }
         
         public int TurnOrder { get; set; }

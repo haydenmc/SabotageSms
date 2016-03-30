@@ -16,6 +16,7 @@ namespace SabotageSms.Models.DbModels
         [MaxLength(120)]
         public string JoinCode { get; set; }
         
+        [InverseProperty("Game")]
         public virtual ICollection<DbGamePlayer> GamePlayers { get; set; }
         
         [InverseProperty("Game")]
@@ -38,7 +39,9 @@ namespace SabotageSms.Models.DbModels
                 JoinCode = JoinCode,
                 Players = GamePlayers?
                     .OrderBy(gp => gp.TurnOrder)
-                    .Select(gp => gp.Player.ToPlayer())
+                    .Select(gp => gp.Player)
+                    .ToList()
+                    .Select(p => p.ToPlayer())
                     .ToList(),
                 Rounds = Rounds?.OrderBy(r => r.RoundNumber).Select(r => r.ToRound()).ToList(),
                 LeaderCount = LeaderCount,

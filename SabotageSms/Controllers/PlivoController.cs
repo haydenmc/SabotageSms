@@ -47,7 +47,7 @@ namespace SabotageSms.Controllers
                 }
                 _gameDataProvider.SetPlayerName(player.PlayerId, assignedName);
                 await _smsProvider.SendSms(player.PhoneNumber,
-                    String.Format("Your name has been set to '{0}'.", assignedName));
+                    String.Format("Your name has been set to '{0}'. 'Start' or 'Join CODEHERE'.", assignedName));
                 return new PlivoResponseModel();
             }
             // If they don't have a name, we need to ask them to set one
@@ -58,6 +58,11 @@ namespace SabotageSms.Controllers
                     "Hi! Before you start, you need to set a name. Please reply with 'Name YOURNAMEHERE'.");
                 return new PlivoResponseModel();
             }
+            
+            // Pass their command to game manager
+            var game = _gameDataProvider.GetPlayerCurrentGame(player.PlayerId);
+            var gameManager = new GameManager(game, _gameDataProvider, _smsProvider);
+            gameManager.ExecuteCommand(player, parsedCommand.Command, parsedCommand.Parameters);
             return new PlivoResponseModel();
         }
     }
