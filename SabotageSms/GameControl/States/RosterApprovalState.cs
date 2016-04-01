@@ -23,12 +23,12 @@ namespace SabotageSms.GameControl.States
             {
                 var round = _game.Rounds.Last();
                 // Mark this player as approving/rejecting
-                _game = _gameDataProvider.SetRoundPlayerAsApproving(round.RoundId,
+                round = _gameDataProvider.SetRoundPlayerAsApproving(round.RoundId,
                     fromPlayer.PlayerId,
                     command == Command.ApproveRoster);
+                _game.Rounds[_game.Rounds.Count - 1] = round;
                 
                 // Check if all the votes are in.
-                round = _game.Rounds.Last();
                 if ((round.ApprovingPlayers.Count + round.RejectingPlayers.Count) >= _game.Players.Count)
                 {
                     var playerVoteSummary = String.Format("✔: {0}\n✖: {1}",
@@ -47,7 +47,8 @@ namespace SabotageSms.GameControl.States
                     {
                         // Mission is rejected.
                         var numRejections = round.RejectedCount + 1;
-                        _game = _gameDataProvider.SetRoundRejectedCount(round.RoundId, numRejections);
+                        round = _gameDataProvider.SetRoundRejectedCount(round.RoundId, numRejections);
+                        _game.Rounds[_game.Rounds.Count - 1] = round;
                         if (numRejections > GameManager.MaxRejectionCount)
                         {
                             // TODO: bad player victory
@@ -58,7 +59,7 @@ namespace SabotageSms.GameControl.States
                                 GameManager.MaxRejectionCount - numRejections,
                                 playerVoteSummary));
                             // Clear approvals and advance to next leader
-                            _game = _gameDataProvider.ClearRoundApprovals(round.RoundId);
+                            round = _gameDataProvider.ClearRoundApprovals(round.RoundId);
                             _game = _gameDataProvider.AdvanceGameLeader(_game.GameId);
                             // Advance to roster state
                             var rosterState = new RosterState(_gameDataProvider, _smsProvider, _game, _resetState);

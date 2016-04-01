@@ -54,6 +54,7 @@ namespace SabotageSms.GameControl.States
                         String.Format("You cannot start the game yet. You need between {0} and {1} players.",
                             GameManager.MinPlayers,
                             GameManager.MaxPlayers));
+                    return this;
                 }
             }
             

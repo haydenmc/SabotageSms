@@ -40,11 +40,11 @@ namespace SabotageSms.GameControl.States
                 }
                 
                 // Record their submission
-                _game = _gameDataProvider.SetRoundPlayerPassFail(
+                round = _gameDataProvider.SetRoundPlayerPassFail(
                     round.RoundId,
                     fromPlayer.PlayerId,
                     command == Command.PassMission);
-                round = _game.Rounds.Last();
+                _game.Rounds[_game.Rounds.Count - 1] = round;
                 
                 // Check if all submissions are in
                 if ((round.PassingPlayers.Count + round.FailingPlayers.Count) >= round.SelectedPlayers.Count)
@@ -52,12 +52,12 @@ namespace SabotageSms.GameControl.States
                     var missionFailCount = GameManager.MissionRequiredFailCount[_game.Rounds.Count - 1, _game.Players.Count - GameManager.MinPlayers];
                     if (round.FailingPlayers.Count >= missionFailCount)
                     {
-                        _game = _gameDataProvider.SetRoundBadWins(round.RoundId, true);
+                        round = _gameDataProvider.SetRoundBadWins(round.RoundId, true);
                         SmsAll(String.Format("MISSION SABOTAGED: {0} pass, {1} fail.", round.PassingPlayers.Count, round.FailingPlayers.Count));
                     }
                     else
                     {
-                        _game = _gameDataProvider.SetRoundBadWins(round.RoundId, false);
+                        round = _gameDataProvider.SetRoundBadWins(round.RoundId, false);
                         SmsAll(String.Format("MISSION SUCCEEDED: {0} pass, {1} fail.", round.PassingPlayers.Count, round.FailingPlayers.Count));
                     }
                     

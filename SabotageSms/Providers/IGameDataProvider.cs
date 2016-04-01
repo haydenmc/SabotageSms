@@ -14,14 +14,13 @@ namespace SabotageSms.Providers
         Game SetPlayersGoodBad(long gameId, bool isBad, params long[] playerIds);
         Game ScrambleTurnOrder(long gameId);
         Game SetGameState(long gameId, string newState);
-        Player GetGamePlayerByName(long gameId, string playerName);
         Game AddRound(long gameId);
-        Game SetRoundSelectedPlayers(long roundId, long[] playerIds);
-        Game SetRoundPlayerAsApproving(long roundId, long playerId, bool isApproving);
-        Game ClearRoundApprovals(long roundId);
+        Round SetRoundSelectedPlayers(long roundId, long[] playerIds);
+        Round SetRoundPlayerAsApproving(long roundId, long playerId, bool isApproving);
+        Round ClearRoundApprovals(long roundId);
         Game AdvanceGameLeader(long gameId);
-        Game SetRoundRejectedCount(long roundId, int rejectedCount);
-        Game SetRoundPlayerPassFail(long roundId, long playerId, bool isPass);
-        Game SetRoundBadWins(long roundId, bool badWins);
+        Round SetRoundRejectedCount(long roundId, int rejectedCount);
+        Round SetRoundPlayerPassFail(long roundId, long playerId, bool isPass);
+        Round SetRoundBadWins(long roundId, bool badWins);
     }
 }

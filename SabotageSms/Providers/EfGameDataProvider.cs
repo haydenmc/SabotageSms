@@ -23,19 +23,25 @@ namespace SabotageSms.Providers
         public Game GetGameById(long gameId)
         {
             return _db.Games
-                .Include(g => g.GamePlayers)
-                .ThenInclude(gp => gp.Player)
+                .Hydrate()
                 .SingleOrDefault(g => g.GameId == gameId)?.ToGame();
         }
         
         public Game GetGameByJoinCode(string joinCode)
         {
-            return _db.Games.SingleOrDefault(g => g.JoinCode == joinCode)?.ToGame();
+            return _db.Games
+                .Hydrate()
+                .SingleOrDefault(g => g.JoinCode == joinCode)?.ToGame();
         }
         
         public Player GetOrCreatePlayerByPhoneNumber(string phoneNumber)
         {
-            var player = _db.Players.SingleOrDefault(p => p.PhoneNumber == phoneNumber);
+            var player = _db.Players
+                .Include(p => p.CurrentGame)
+                .ThenInclude(cg => cg.GamePlayers)
+                .ThenInclude(cgp => cgp.Player)
+                .Include(p => p.CurrentGame).ThenInclude(p => p.Rounds)
+                .SingleOrDefault(p => p.PhoneNumber == phoneNumber);
             if (player == null) {
                 player = new DbPlayer()
                 {
@@ -49,7 +55,12 @@ namespace SabotageSms.Providers
         
         public Player SetPlayerName(long playerId, string name)
         {
-            var player = _db.Players.SingleOrDefault(p => p.PlayerId == playerId);
+            var player = _db.Players
+                .Include(p => p.CurrentGame)
+                .ThenInclude(cg => cg.GamePlayers)
+                .ThenInclude(cgp => cgp.Player)
+                .Include(p => p.CurrentGame).ThenInclude(p => p.Rounds)
+                .SingleOrDefault(p => p.PlayerId == playerId);
             if (player != null)
             {
                 player.Name = name;
@@ -60,12 +71,9 @@ namespace SabotageSms.Providers
 
         public Game GetPlayerCurrentGame(long playerId)
         {
-            var game = _db.Players
-                .Include(p => p.CurrentGame)
-                .ThenInclude(cg => cg.GamePlayers)
-                .ThenInclude(cgp => cgp.Player)
-                .SingleOrDefault(p => p.PlayerId == playerId)
-                .CurrentGame;
+            var game = _db.Games
+                .Hydrate()
+                .SingleOrDefault(g => g.GamePlayers.Any(p => p.PlayerId == playerId && p.Player.CurrentGameId == g.GameId));
             return game?.ToGame();
         }
         
@@ -97,7 +105,9 @@ namespace SabotageSms.Providers
             _db.Players.SingleOrDefault(p => p.PlayerId == playerId).CurrentGame = newGame;
             _db.Games.Add(newGame);
             _db.SaveChanges();
-            return newGame.ToGame();
+            // Fetch the fully hydrated game
+            var returnGame = _db.Games.Hydrate().SingleOrDefault(g => g.GameId == newGame.GameId);
+            return returnGame.ToGame();
         }
         
         public Game JoinPlayerToGame(long playerId, long gameId)
@@ -107,7 +117,9 @@ namespace SabotageSms.Providers
             {
                 return null;
             }
-            var game = _db.Games.SingleOrDefault(g => g.GameId == gameId);
+            var game = _db.Games
+                .Hydrate()
+                .SingleOrDefault(g => g.GameId == gameId);
             if (game == null)
             {
                 return null;
@@ -126,7 +138,9 @@ namespace SabotageSms.Providers
         
         public Game SetPlayersGoodBad(long gameId, bool isBad, params long[] playerIds)
         {
-            var game = _db.Games.SingleOrDefault(g => g.GameId == gameId);
+            var game = _db.Games
+                .Hydrate()
+                .SingleOrDefault(g => g.GameId == gameId);
             if (game == null)
             {
                 return null;
@@ -142,7 +156,9 @@ namespace SabotageSms.Providers
         
         public Game ScrambleTurnOrder(long gameId)
         {
-            var game = _db.Games.SingleOrDefault(g => g.GameId == gameId);
+            var game = _db.Games
+                .Hydrate()
+                .SingleOrDefault(g => g.GameId == gameId);
             if (game == null)
             {
                 return null;
@@ -158,7 +174,9 @@ namespace SabotageSms.Providers
         
         public Game SetGameState(long gameId, string newState)
         {
-            var game = _db.Games.SingleOrDefault(g => g.GameId == gameId);
+            var game = _db.Games
+                .Hydrate()
+                .SingleOrDefault(g => g.GameId == gameId);
             if (game == null)
             {
                 return null;
@@ -168,19 +186,11 @@ namespace SabotageSms.Providers
             return game.ToGame();
         }
         
-        public Player GetGamePlayerByName(long gameId, string playerName)
-        {
-            var gamePlayer = _db.GamePlayers
-                .SingleOrDefault(g =>
-                    g.Player.Name.ToUpper() == playerName.ToUpper()
-                    && g.GameId == gameId
-                );
-            return gamePlayer?.Player.ToPlayer();
-        }
-        
         public Game AddRound(long gameId)
         {
-            var game = _db.Games.SingleOrDefault(g => g.GameId == gameId);
+            var game = _db.Games
+                .Hydrate()
+                .SingleOrDefault(g => g.GameId == gameId);
             if (game == null)
             {
                 return null;
@@ -198,11 +208,10 @@ namespace SabotageSms.Providers
             return game.ToGame();
         }
         
-        public Game SetRoundSelectedPlayers(long roundId, long[] playerIds)
+        public Round SetRoundSelectedPlayers(long roundId, long[] playerIds)
         {
             var round = _db.Rounds
-                .Include(r => r.SelectedPlayers)
-                .Include(r => r.Game)
+                .Hydrate()
                 .SingleOrDefault(g => g.RoundId == roundId);
             if (round == null)
             {
@@ -214,15 +223,13 @@ namespace SabotageSms.Providers
                 round.SelectedPlayers.Add(_db.Players.SingleOrDefault(p => p.PlayerId == playerIds[i]));
             }
             _db.SaveChanges();
-            return round.Game.ToGame();
+            return round.ToRound();
         }
         
-        public Game SetRoundPlayerAsApproving(long roundId, long playerId, bool isApproving)
+        public Round SetRoundPlayerAsApproving(long roundId, long playerId, bool isApproving)
         {
             var round = _db.Rounds
-                .Include(r => r.Game)
-                .Include(r => r.Game.GamePlayers)
-                .ThenInclude(gp => gp.Player)
+                .Hydrate()
                 .SingleOrDefault(r => r.RoundId == roundId);
             if (round == null)
             {
@@ -262,13 +269,13 @@ namespace SabotageSms.Providers
                 }
             }
             _db.SaveChanges();
-            return round.Game.ToGame();
+            return round.ToRound();
         }
         
-        public Game ClearRoundApprovals(long roundId)
+        public Round ClearRoundApprovals(long roundId)
         {
             var round = _db.Rounds
-                .Include(r => r.Game)
+                .Hydrate()
                 .SingleOrDefault(r => r.RoundId == roundId);
             if (round == null)
             {
@@ -277,12 +284,14 @@ namespace SabotageSms.Providers
             round.ApprovingPlayers.Clear();
             round.RejectingPlayers.Clear();
             _db.SaveChanges();
-            return round.Game.ToGame();
+            return round.ToRound();
         }
         
         public Game AdvanceGameLeader(long gameId)
         {
-            var game = _db.Games.SingleOrDefault(g => g.GameId == gameId);
+            var game = _db.Games
+                .Hydrate()
+                .SingleOrDefault(g => g.GameId == gameId);
             if (game == null)
             {
                 return null;
@@ -292,10 +301,10 @@ namespace SabotageSms.Providers
             return game.ToGame();
         }
         
-        public Game SetRoundRejectedCount(long roundId, int rejectedCount)
+        public Round SetRoundRejectedCount(long roundId, int rejectedCount)
         {
             var round = _db.Rounds
-                .Include(r => r.Game)
+                .Hydrate()
                 .SingleOrDefault(r => r.RoundId == roundId);
             if (round == null)
             {
@@ -303,21 +312,19 @@ namespace SabotageSms.Providers
             }
             round.RejectedCount = rejectedCount;
             _db.SaveChanges();
-            return round.Game.ToGame();
+            return round.ToRound();
         }
         
-        public Game SetRoundPlayerPassFail(long roundId, long playerId, bool isPass)
+        public Round SetRoundPlayerPassFail(long roundId, long playerId, bool isPass)
         {
             var round = _db.Rounds
-                .Include(r => r.Game)
-                .Include(r => r.Game.GamePlayers)
-                .ThenInclude(gp => gp.Player)
+                .Hydrate()
                 .SingleOrDefault(r => r.RoundId == roundId);
             if (round == null)
             {
                 return null;
             }
-            var player = round.Game.GamePlayers.SingleOrDefault(p => p.PlayerId == playerId)?.Player;
+            var player = _db.Players.SingleOrDefault(p => p.PlayerId == playerId);
             if (player == null)
             {
                 return null;
@@ -351,12 +358,13 @@ namespace SabotageSms.Providers
                 }
             }
             _db.SaveChanges();
-            return round.Game.ToGame();
+            return round.ToRound();
         }
         
-        public Game SetRoundBadWins(long roundId, bool badWins)
+        public Round SetRoundBadWins(long roundId, bool badWins)
         {
             var round = _db.Rounds
+                .Hydrate()
                 .SingleOrDefault(r => r.RoundId == roundId);
             if (round == null)
             {
@@ -364,7 +372,31 @@ namespace SabotageSms.Providers
             }
             round.BadWins = badWins;
             _db.SaveChanges();
-            return round.Game.ToGame();
+            return round.ToRound();
+        }
+    }
+    
+    public static class EfExtensionMethods
+    {
+        public static IQueryable<DbGame> Hydrate(this IQueryable<DbGame> dbGame)
+        {
+            return dbGame
+                .Include(g => g.GamePlayers).ThenInclude(gp => gp.Player)
+                .Include(g => g.Rounds).ThenInclude(r => r.SelectedPlayers)
+                .Include(g => g.Rounds).ThenInclude(r => r.ApprovingPlayers)
+                .Include(g => g.Rounds).ThenInclude(r => r.RejectingPlayers)
+                .Include(g => g.Rounds).ThenInclude(r => r.PassingPlayers)
+                .Include(g => g.Rounds).ThenInclude(r => r.FailingPlayers);
+        }
+        
+        public static IQueryable<DbRound> Hydrate(this IQueryable<DbRound> dbRound)
+        {
+            return dbRound
+                .Include(r => r.SelectedPlayers)
+                .Include(r => r.ApprovingPlayers)
+                .Include(r => r.RejectingPlayers)
+                .Include(r => r.PassingPlayers)
+                .Include(r => r.FailingPlayers);
         }
     }
 }

@@ -60,19 +60,20 @@ namespace SabotageSms.GameControl.States
                 long[] playerIds = new long[players.Length];
                 for (var i = 0; i < players.Length; i++)
                 {
-                    var p = _gameDataProvider.GetGamePlayerByName(_game.GameId, players[i]);
-                    if (p == null)
+                    var player = _game.Players.SingleOrDefault(p => p.Name.ToUpper() == players[i].ToUpper());
+                    if (player == null)
                     {
                         SmsPlayer(fromPlayer,
                             String.Format("⚠ We couldn't find a player named '{0}'.", players[i]));
                         return this;
                     }
-                    playerIds[i] = p.PlayerId;
+                    playerIds[i] = player.PlayerId;
                 }
                 
                 // Commit players and announce
-                _game = _gameDataProvider.SetRoundSelectedPlayers(_game.Rounds.Last().RoundId, playerIds);
-                var selectedPlayerNames = string.Join(", ", _game.Rounds.Last().SelectedPlayers.Select(p => p.Name));
+                var round = _gameDataProvider.SetRoundSelectedPlayers(_game.Rounds.Last().RoundId, playerIds);
+                _game.Rounds[_game.Rounds.Count - 1] = round;
+                var selectedPlayerNames = string.Join(", ", round.SelectedPlayers.Select(p => p.Name));
                 SmsPlayer(fromPlayer, 
                     String.Format("{0} have been selected, pending your 'confirm'.", selectedPlayerNames));
                 SmsAllExcept(fromPlayer, 
