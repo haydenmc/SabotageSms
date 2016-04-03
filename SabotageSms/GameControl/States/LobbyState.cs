@@ -8,7 +8,7 @@ namespace SabotageSms.GameControl.States
     public class LobbyState : AbstractState
     {
         public LobbyState(IGameDataProvider gameDataProvider, ISmsProvider smsProvider, Game game, AbstractState resetState)
-            : base(gameDataProvider, smsProvider, game, resetState)
+            : base(gameDataProvider, smsProvider, game)
         {}
         
         public override AbstractState ProcessCommand(Player fromPlayer, Command command, object parameters)
@@ -30,11 +30,11 @@ namespace SabotageSms.GameControl.States
                     // Inform each player of their role
                     foreach (var player in _game.BadPlayers)
                     {
-                        SmsPlayer(player, "👿 You are a bad player!");
+                        SmsPlayer(player, "TOP SECRET: You are a saboteur!");
                     }
                     foreach (var player in _game.GoodPlayers)
                     {
-                        SmsPlayer(player, "😎 You are a good player!");
+                        SmsPlayer(player, "TOP SECRET: You are a good player!");
                     }
                     
                     // Scramble turn order
@@ -44,7 +44,7 @@ namespace SabotageSms.GameControl.States
                     _game = _gameDataProvider.AddRound(_game.GameId);
                     
                     // Advance to roster state
-                    var rosterState = new RosterState(_gameDataProvider, _smsProvider, _game, _resetState);
+                    var rosterState = new RosterState(_gameDataProvider, _smsProvider, _game);
                     rosterState.Announce();
                     return rosterState;
                 }
@@ -59,8 +59,7 @@ namespace SabotageSms.GameControl.States
             }
             
             // Unimplemented command for this state.
-            SmsPlayer(fromPlayer, "⚠ You can't do that right now.");
-            return this;
+            return null;
         }
     }
 }

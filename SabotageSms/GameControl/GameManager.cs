@@ -65,15 +65,11 @@ namespace SabotageSms.GameControl
         
         public void ExecuteCommand(Player fromPlayer, Command command, object parameters = null)
         {
-            // TODO: Handle this differently...
-            if (command == Command.New || command == Command.Join)
-            {
-                new NoGameState(_gameDataProvider, _smsProvider, null).ProcessCommand(fromPlayer, command, parameters);
-                return;
-            }
-            
             var resultState = _currentState.ProcessCommand(fromPlayer, command, parameters);
-            // TODO: Persist new result state in DB
+            if (resultState == null)
+            {
+                resultState = new NoGameState(_gameDataProvider, _smsProvider, _game).ProcessCommand(fromPlayer, command, parameters);
+            }
             if (_game != null)
             {
                 _gameDataProvider.SetGameState(_game.GameId, resultState.GetType().Name);

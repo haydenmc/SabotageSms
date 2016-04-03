@@ -7,13 +7,13 @@ namespace SabotageSms.GameControl.States
 {
     public class GameOverState : AbstractState
     {
-        public GameOverState(IGameDataProvider gameDataProvider, ISmsProvider smsProvider, Game game, AbstractState resetState)
-            : base(gameDataProvider, smsProvider, game, resetState)
+        public GameOverState(IGameDataProvider gameDataProvider, ISmsProvider smsProvider, Game game)
+            : base(gameDataProvider, smsProvider, game)
         {}
 
         public override AbstractState ProcessCommand(Player fromPlayer, Command command, object parameters)
         {
-            throw new NotImplementedException();
+            return null;
         }
     }
 }

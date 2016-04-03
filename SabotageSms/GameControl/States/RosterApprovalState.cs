@@ -7,8 +7,8 @@ namespace SabotageSms.GameControl.States
 {
     public class RosterApprovalState : AbstractState
     {
-        public RosterApprovalState(IGameDataProvider gameDataProvider, ISmsProvider smsProvider, Game game, AbstractState resetState)
-            : base(gameDataProvider, smsProvider, game, resetState)
+        public RosterApprovalState(IGameDataProvider gameDataProvider, ISmsProvider smsProvider, Game game)
+            : base(gameDataProvider, smsProvider, game)
         {}
         
         public void AnnounceStart()
@@ -31,7 +31,7 @@ namespace SabotageSms.GameControl.States
                 // Check if all the votes are in.
                 if ((round.ApprovingPlayers.Count + round.RejectingPlayers.Count) >= _game.Players.Count)
                 {
-                    var playerVoteSummary = String.Format("✔: {0}\n✖: {1}",
+                    var playerVoteSummary = String.Format("Approve: {0}\nReject: {1}",
                         string.Join(", ", round.ApprovingPlayers.Select(p => p.Name)),
                         string.Join(", ", round.RejectingPlayers.Select(p => p.Name)));
                     if (round.ApprovingPlayers.Count > round.RejectingPlayers.Count)
@@ -39,7 +39,7 @@ namespace SabotageSms.GameControl.States
                         // Mission is approved.
                         SmsAll(String.Format("MISSION APPROVED.\n{0}", playerVoteSummary));
                         // Advance to mission state.
-                        var missionState = new MissionState(_gameDataProvider, _smsProvider, _game, _resetState);
+                        var missionState = new MissionState(_gameDataProvider, _smsProvider, _game);
                         missionState.Announce();
                         return missionState;
                     }
@@ -62,7 +62,7 @@ namespace SabotageSms.GameControl.States
                             round = _gameDataProvider.ClearRoundApprovals(round.RoundId);
                             _game = _gameDataProvider.AdvanceGameLeader(_game.GameId);
                             // Advance to roster state
-                            var rosterState = new RosterState(_gameDataProvider, _smsProvider, _game, _resetState);
+                            var rosterState = new RosterState(_gameDataProvider, _smsProvider, _game);
                             rosterState.Announce();
                             return rosterState;
                         }
@@ -76,9 +76,9 @@ namespace SabotageSms.GameControl.States
                     return this;
                 }
             }
+            
             // Unimplemented command for this state.
-            SmsPlayer(fromPlayer, "⚠ You can't do that right now.");
-            return this;
+            return null;
         }
     }
 }
