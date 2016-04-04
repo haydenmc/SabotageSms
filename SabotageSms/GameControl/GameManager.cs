@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using SabotageSms.GameControl.States;
 using SabotageSms.Models;
 using SabotageSms.Providers;
@@ -137,7 +135,11 @@ namespace SabotageSms.GameControl
             }
             if (_game != null)
             {
-                _gameDataProvider.SetGameState(_game.GameId, resultState.GetType().Name);
+                // Do not set NoGameState as a game state
+                if (!(resultState is NoGameState))
+                {
+                    _gameDataProvider.SetGameState(_game.GameId, resultState.GetType().Name);
+                }
             }
         }
     }

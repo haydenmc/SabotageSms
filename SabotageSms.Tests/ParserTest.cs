@@ -1,15 +1,8 @@
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 using SabotageSms.GameControl;
-using Microsoft.Data.Entity;
-using SabotageSms.Models.DbModels;
 using SabotageSms.Providers;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Data.Entity.Infrastructure;
 using Xunit.Abstractions;
-using SabotageSms.Models;
 
 namespace SabotageSms.Tests
 {

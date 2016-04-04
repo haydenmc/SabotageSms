@@ -66,17 +66,10 @@ namespace SabotageSms.GameControl.States
                     var goodWinCount = _game.Rounds.Where(r => !r.BadWins).Count();
                     if (badWinCount >= GameManager.WinCount || goodWinCount >= GameManager.WinCount)
                     {
-                        var badNames = String.Join(", ", _game.BadPlayers.Select(p => p.Name));
-                        if (badWinCount > goodWinCount)
-                        {
-                            SmsAll(String.Format(GameStrings.SaboteursWin, badNames));
-                        }
-                        else
-                        {
-                            SmsAll(String.Format(GameStrings.SaboteursLose, badNames));
-                        }
                         // Transition to game over state
-                        return new GameOverState(_gameDataProvider, _smsProvider, _game);
+                        var gameOverState = new GameOverState(_gameDataProvider, _smsProvider, _game);
+                        gameOverState.AnnounceWinner();
+                        return gameOverState;
                     }
                     else
                     {

@@ -1,7 +1,6 @@
 using System;
 using SabotageSms.Models;
 using SabotageSms.Providers;
-using System.Linq;
 
 namespace SabotageSms.GameControl.States
 {

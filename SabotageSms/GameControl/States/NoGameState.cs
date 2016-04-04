@@ -11,6 +11,31 @@ namespace SabotageSms.GameControl.States
         public NoGameState(IGameDataProvider gameDataProvider, ISmsProvider smsProvider, Game game)
             : base(gameDataProvider, smsProvider, game)
         {}
+        
+        private AbstractState PlayerDepart(Player fromPlayer)
+        {
+            // If the game hasn't started yet, they simply leave. Otherwise, they forfeit.
+            if (_game.CurrentState == typeof(LobbyState).Name)
+            {
+                SmsAllExcept(fromPlayer,
+                    string.Format(GameStrings.PlayerLeftLobby, fromPlayer.Name, _game.Players.Count - 1));
+                _game = _gameDataProvider.RemovePlayerFromGame(_game.GameId, fromPlayer.PlayerId);
+                return this;
+            }
+            else if (_game.CurrentState == typeof(GameOverState).Name)
+            {
+                // Do nothing, the game is already over.
+                return this;
+            }
+            else
+            {
+                SmsAll(string.Format(GameStrings.PlayerForfeits, fromPlayer.Name));
+                // Transition to game over state
+                var gameOverState = new GameOverState(_gameDataProvider, _smsProvider, _game);
+                gameOverState.AnnounceWinner();
+                return gameOverState;
+            }
+        }
 
         public override AbstractState ProcessCommand(Player fromPlayer, Command command, object parameters)
         {
@@ -47,15 +72,22 @@ namespace SabotageSms.GameControl.States
             // New game command
             if (command == Command.New)
             {
+                AbstractState returnState = this;
+                if (_game != null)
+                {
+                    // The state we return will apply to our last game
+                    returnState = PlayerDepart(fromPlayer);
+                }
                 _game = _gameDataProvider.CreateNewGame(fromPlayer.PlayerId);
                 SmsPlayer(fromPlayer,
                     String.Format(GameStrings.NewGameCreated, _game.JoinCode));
-                return new LobbyState(_gameDataProvider, _smsProvider, _game);
+                return returnState;
             }
             
             // Join game command
             if (command == Command.Join)
             {
+                AbstractState returnState = this;
                 var game = _gameDataProvider.GetGameByJoinCode(parameters as string);
                 if (game == null)
                 {
@@ -71,12 +103,17 @@ namespace SabotageSms.GameControl.States
                     SmsPlayer(fromPlayer, GameStrings.GameIsFull);
                     return this;
                 }
+                if (_game != null)
+                {
+                    // The state we return will apply to our last game
+                    returnState = PlayerDepart(fromPlayer);
+                }
                 _game = _gameDataProvider.JoinPlayerToGame(fromPlayer.PlayerId, game.GameId);
                 SmsPlayer(fromPlayer,
                     String.Format(GameStrings.YouHaveJoined, _game.Players.Count));
                 SmsAllExcept(fromPlayer,
                     String.Format(GameStrings.NewPlayerJoined, fromPlayer.Name, _game.Players.Count));
-                return new LobbyState(_gameDataProvider, _smsProvider, _game);
+                return returnState;
             }
             
             // Unimplemented command for this state.

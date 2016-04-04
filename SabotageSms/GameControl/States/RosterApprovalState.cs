@@ -51,7 +51,10 @@ namespace SabotageSms.GameControl.States
                         _game.Rounds[_game.Rounds.Count - 1] = round;
                         if (numRejections > GameManager.MaxRejectionCount)
                         {
-                            // TODO: bad player victory
+                            // Transition to game over state
+                            var gameOverState = new GameOverState(_gameDataProvider, _smsProvider, _game);
+                            gameOverState.SaboteursWin();
+                            return gameOverState;
                         }
                         else
                         {

@@ -136,6 +136,27 @@ namespace SabotageSms.Providers
             return game.ToGame();
         }
         
+        public Game RemovePlayerFromGame(long playerId, long gameId)
+        {
+            var player = _db.Players.SingleOrDefault(p => p.PlayerId == playerId);
+            if (player == null) 
+            {
+                return null;
+            }
+            var gamePlayer = _db.GamePlayers.SingleOrDefault(gp => gp.PlayerId == playerId && gp.GameId == gameId);
+            if (gamePlayer == null)
+            {
+                return null;
+            }
+            _db.GamePlayers.Remove(gamePlayer);
+            player.CurrentGameId = null;
+            _db.SaveChanges();
+            return _db.Games
+                .Hydrate()
+                .SingleOrDefault(g => g.GameId == gameId)
+                .ToGame();
+        }
+        
         public Game SetPlayersGoodBad(long gameId, bool isBad, params long[] playerIds)
         {
             var game = _db.Games

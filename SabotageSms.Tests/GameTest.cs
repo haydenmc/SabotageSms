@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 using SabotageSms.GameControl;
@@ -9,8 +8,6 @@ using SabotageSms.Providers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Data.Entity.Infrastructure;
 using Xunit.Abstractions;
-using SabotageSms.Models;
-using SabotageSms.Controllers;
 using SabotageSms.GameControl.States;
 
 namespace SabotageSms.Tests
@@ -190,7 +187,12 @@ namespace SabotageSms.Tests
                     game = _db.Games
                         .Hydrate()
                         .SingleOrDefault(g => g.GameId == gameId);
-                    Assert.True(game.Rounds.OrderBy(r => r.RoundNumber).ToList()[game.Rounds.Count - 2].BadWins);
+                    var lastRound = _db.Rounds
+                        .Where(r => r.GameId == game.GameId)
+                        .Where(r => r.ApprovingPlayers.Count + r.RejectingPlayers.Count == game.GamePlayers.Count)
+                        .OrderByDescending(r => r.RoundNumber)
+                        .FirstOrDefault();
+                    Assert.True(lastRound.BadWins);
                 }
                 else
                 {
@@ -201,7 +203,12 @@ namespace SabotageSms.Tests
                     game = _db.Games
                         .Hydrate()
                         .SingleOrDefault(g => g.GameId == gameId);
-                    Assert.False(game.Rounds.OrderBy(r => r.RoundNumber).ToList()[game.Rounds.Count - 2].BadWins);
+                    var lastRound = _db.Rounds
+                        .Where(r => r.GameId == game.GameId)
+                        .Where(r => r.ApprovingPlayers.Count + r.RejectingPlayers.Count == game.GamePlayers.Count)
+                        .OrderByDescending(r => r.RoundNumber)
+                        .FirstOrDefault();
+                    Assert.False(lastRound.BadWins);
                 }
                 
                 game = _db.Games
