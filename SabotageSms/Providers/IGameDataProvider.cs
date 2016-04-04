@@ -2,6 +2,9 @@ using SabotageSms.Models;
 
 namespace SabotageSms.Providers
 {
+    /// <summary>
+    /// Interface for fetching and updating game data to a database/storage
+    /// </summary>
     public interface IGameDataProvider
     {
         Game GetGameById(long gameId);

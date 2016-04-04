@@ -18,7 +18,7 @@ namespace SabotageSms.GameControl.States
             var missionFailCount = GameManager.MissionRequiredFailCount[_game.Rounds.Count - 1, _game.Players.Count - GameManager.MinPlayers];
             if (missionFailCount != 1)
             {
-                failCountWarning = String.Format("\n*{0} fails required to sabotage this mission.", missionFailCount);
+                failCountWarning = String.Format("\n" + GameStrings.FailCountWarning, missionFailCount);
             }
             
             // Grab the current mission leader
@@ -27,9 +27,9 @@ namespace SabotageSms.GameControl.States
             // Announce start of roster state
             var missionPlayerCount = GameManager.MissionPlayerNumber[_game.Rounds.Count - 1, _game.Players.Count - GameManager.MinPlayers];
             SmsAllExcept(leader,
-                String.Format("ROUND {0}: {1} leader. {2} players required.{3}", _game.Rounds.Count, leader.Name, missionPlayerCount, failCountWarning));
+                String.Format(GameStrings.NewRoundAnnounce, _game.Rounds.Count, leader.Name, missionPlayerCount, failCountWarning));
             SmsPlayer(leader,
-                String.Format("ROUND {0}: You are the leader. Select {1} players.{2}", _game.Rounds.Count, missionPlayerCount, failCountWarning));
+                String.Format(GameStrings.NewRoundAnnounceForLeader, _game.Rounds.Count, missionPlayerCount, failCountWarning));
         }
 
         public override AbstractState ProcessCommand(Player fromPlayer, Command command, object parameters)
@@ -41,7 +41,7 @@ namespace SabotageSms.GameControl.States
                 if (fromPlayer.PlayerId != leader.PlayerId)
                 {
                     SmsPlayer(fromPlayer,
-                        String.Format("Only {0} can choose players to participate in this mission.", leader.Name));
+                        String.Format(GameStrings.OnlyLeaderCanSelectRoster, leader.Name));
                     return this;
                 }
                 
@@ -52,7 +52,7 @@ namespace SabotageSms.GameControl.States
                 if (players.Length != missionPlayerCount)
                 {
                     SmsPlayer(fromPlayer,
-                        String.Format("You need to select {0} players for this mission.", missionPlayerCount));
+                        String.Format(GameStrings.MustSelectNumberOfPlayers, missionPlayerCount));
                     return this;
                 }
                 
@@ -64,7 +64,7 @@ namespace SabotageSms.GameControl.States
                     if (player == null)
                     {
                         SmsPlayer(fromPlayer,
-                            String.Format("We couldn't find a player named '{0}'.", players[i]));
+                            String.Format(GameStrings.CouldNotFindPlayerByName, players[i]));
                         return this;
                     }
                     playerIds[i] = player.PlayerId;
@@ -75,9 +75,9 @@ namespace SabotageSms.GameControl.States
                 _game.Rounds[_game.Rounds.Count - 1] = round;
                 var selectedPlayerNames = string.Join(", ", round.SelectedPlayers.Select(p => p.Name));
                 SmsPlayer(fromPlayer, 
-                    String.Format("{0} have been selected, pending your 'confirm'.", selectedPlayerNames));
+                    String.Format(GameStrings.RosterSelectedForLeader, selectedPlayerNames));
                 SmsAllExcept(fromPlayer, 
-                    String.Format("{0} have been selected, pending {1}'s confirmation.", selectedPlayerNames, fromPlayer.Name));
+                    String.Format(GameStrings.RosterSelected, selectedPlayerNames, fromPlayer.Name));
                 return new RosterStagingState(_gameDataProvider, _smsProvider, _game);
             }
             

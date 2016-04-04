@@ -10,6 +10,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Data.Entity.Infrastructure;
 using Xunit.Abstractions;
 using SabotageSms.Models;
+using SabotageSms.Controllers;
+using SabotageSms.GameControl.States;
 
 namespace SabotageSms.Tests
 {
@@ -20,6 +22,21 @@ namespace SabotageSms.Tests
         private ITestOutputHelper _output;
         private ServiceCollection _serviceCollection;
         private DbContextOptions<ApplicationDbContext> _contextOptions;
+        private ApplicationDbContext _db;
+        
+        private static readonly string[,] _playerInfo = new string[,]
+        {
+            {"TaylorSwift", "18008675309"},
+            {"MisterButt",  "18008675310"},
+            {"DoctorButt",  "18008675311"},
+            {"SenorButt",   "18008675312"},
+            {"CaptainButt", "18008675313"},
+            {"ProfButt",    "18008675314"},
+            {"MrsButt",     "18008675315"},
+            {"ImaButt",     "18008675316"},
+            {"ButtMan",     "18008675317"},
+            {"Butt",        "18008675318"},
+        };
         
         public GameTest(ITestOutputHelper output)
         {
@@ -35,249 +52,169 @@ namespace SabotageSms.Tests
             var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
             optionsBuilder.UseInMemoryDatabase();
             _contextOptions = optionsBuilder.Options;
+            var serviceProvider = _serviceCollection.BuildServiceProvider();
+            _db = new ApplicationDbContext(serviceProvider, _contextOptions);
         }
         
-        [Fact]
-        public void FivePlayerGame()
+        private void Sms(string fromNumber, string body)
         {
-            var playerNames = new string[] {
-                "TaylorSwift",
-                "MisterButt",
-                "DoctorButt",
-                "SenorButt",
-                "CaptainButt"
-            };
-            var players = new Player[playerNames.Length];
-            var serviceProvider = _serviceCollection.BuildServiceProvider();
-            using (var db = new ApplicationDbContext(serviceProvider, _contextOptions))
+            var gameDataProvider = new EfGameDataProvider(_db);
+            var parsingProvider = new ParsingProvider();
+            var smsProvider = new MockSmsProvider(_output);
+            var controller = new MockSmsController(gameDataProvider, parsingProvider, smsProvider);
+            controller.Sms(fromNumber, body);
+        }
+        
+        private void NamePlayers(int playerCount = 5)
+        {
+            for (var i = 0; i < playerCount; i++)
             {
-                IGameDataProvider gameDataProvider = new EfGameDataProvider(db);
-                ISmsProvider smsProvider = new MockSmsProvider(_output);
-                
-                for (var i = 0; i < playerNames.Length; i++)
-                {
-                    players[i] = gameDataProvider.GetOrCreatePlayerByPhoneNumber("1800867530" + i);
-                    Assert.Equal(players[i].PhoneNumber, "1800867530" + i);
-                    players[i] = gameDataProvider.SetPlayerName(players[i].PlayerId, playerNames[i]);
-                }
-                
-                // Simulate new game command
-                var gameManager = new GameManager(null, gameDataProvider, smsProvider);
-                gameManager.ExecuteCommand(players[0], Command.New);
-                
-                // Fetch the game
-                var game = gameDataProvider.GetPlayerCurrentGame(players[0].PlayerId);
-                Assert.NotNull(game);
-                
-                // Join a second player
-                gameManager = new GameManager(null, gameDataProvider, smsProvider); // Game is null as this player is not in a game
-                gameManager.ExecuteCommand(players[1], Command.Join, game.JoinCode);
-                
-                // Fetch the game, verify players
-                game = gameDataProvider.GetGameById(game.GameId);
-                Assert.NotNull(game);
-                Assert.True(game.Players.Where(p => p.Name == playerNames[0]).Count() > 0);
-                Assert.True(game.Players.Where(p => p.Name == playerNames[1]).Count() > 0);
-                
-                // Join three more players so we have five
-                for (var i = 2; i < players.Length; i++)
-                {
-                    gameManager = new GameManager(null, gameDataProvider, smsProvider); // Game is null as this player is not in a game
-                    gameManager.ExecuteCommand(players[i], Command.Join, game.JoinCode);
-                }
-                
-                // Start the game!
-                game = gameDataProvider.GetGameById(game.GameId);
-                gameManager = new GameManager(game, gameDataProvider, smsProvider);
-                gameManager.ExecuteCommand(players[0], Command.StartGame);
-                
-                // Select mission peeps
-                game = gameDataProvider.GetGameById(game.GameId);
-                var leader = game.Players[game.LeaderCount % game.Players.Count];
-                gameManager = new GameManager(game, gameDataProvider, smsProvider);
-                gameManager.ExecuteCommand(leader, Command.SelectRoster, new string[] {
-                    playerNames[0],
-                    playerNames[1]
-                });
-                
-                // Select a wrong number
-                game = gameDataProvider.GetGameById(game.GameId);
-                gameManager = new GameManager(game, gameDataProvider, smsProvider);
-                gameManager.ExecuteCommand(leader, Command.SelectRoster, new string[] {
-                    playerNames[0]
-                });
-                
-                // Select a non-existing player
-                game = gameDataProvider.GetGameById(game.GameId);
-                gameManager = new GameManager(game, gameDataProvider, smsProvider);
-                gameManager.ExecuteCommand(leader, Command.SelectRoster, new string[] {
-                    playerNames[0],
-                    "Vlad"
-                });
-                
-                // Change it up
-                game = gameDataProvider.GetGameById(game.GameId);
-                gameManager = new GameManager(game, gameDataProvider, smsProvider);
-                gameManager.ExecuteCommand(leader, Command.SelectRoster, new string[] {
-                    playerNames[1],
-                    playerNames[2]
-                });
-                
-                // Confirm
-                game = gameDataProvider.GetGameById(game.GameId);
-                gameManager = new GameManager(game, gameDataProvider, smsProvider);
-                gameManager.ExecuteCommand(leader, Command.ConfirmRoster);
-                
-                // Reject the mission 3 to 2.
-                for (var i = 0; i < 2; i++)
-                {
-                    game = gameDataProvider.GetGameById(game.GameId);
-                    gameManager = new GameManager(game, gameDataProvider, smsProvider);
-                    gameManager.ExecuteCommand(players[i], Command.ApproveRoster);
-                }
-                for (var i = 2; i < players.Length; i++)
-                {
-                    game = gameDataProvider.GetGameById(game.GameId);
-                    gameManager = new GameManager(game, gameDataProvider, smsProvider);
-                    gameManager.ExecuteCommand(players[i], Command.RejectRoster);
-                }
-                
-                // Select mission peeps
-                game = gameDataProvider.GetGameById(game.GameId);
-                leader = game.Players[game.LeaderCount % game.Players.Count];
-                _output.WriteLine("Leader = " + leader.Name + "?");
-                gameManager = new GameManager(game, gameDataProvider, smsProvider);
-                gameManager.ExecuteCommand(leader, Command.SelectRoster, new string[] {
-                    playerNames[0],
-                    playerNames[1]
-                });
-                
-                // Confirm
-                game = gameDataProvider.GetGameById(game.GameId);
-                gameManager = new GameManager(game, gameDataProvider, smsProvider);
-                gameManager.ExecuteCommand(leader, Command.ConfirmRoster);
-                
-                // Approve the mission unanimously.
-                for (var i = 0; i < players.Length; i++)
-                {
-                    game = gameDataProvider.GetGameById(game.GameId);
-                    gameManager = new GameManager(game, gameDataProvider, smsProvider);
-                    gameManager.ExecuteCommand(players[i], Command.ApproveRoster);
-                }
-                
-                // Pass the mission
-                for (var i = 0; i < 2; i++)
-                {
-                    game = gameDataProvider.GetGameById(game.GameId);
-                    gameManager = new GameManager(game, gameDataProvider, smsProvider);
-                    gameManager.ExecuteCommand(players[i], Command.PassMission);
-                }
-                
-                // Select mission peeps
-                game = gameDataProvider.GetGameById(game.GameId);
-                leader = game.Players[game.LeaderCount % game.Players.Count];
-                _output.WriteLine("Leader = " + leader.Name + "?");
-                gameManager = new GameManager(game, gameDataProvider, smsProvider);
-                gameManager.ExecuteCommand(leader, Command.SelectRoster, new string[] {
-                    playerNames[0],
-                    playerNames[1],
-                    playerNames[2]
-                });
-                
-                // Confirm
-                game = gameDataProvider.GetGameById(game.GameId);
-                gameManager = new GameManager(game, gameDataProvider, smsProvider);
-                gameManager.ExecuteCommand(leader, Command.ConfirmRoster);
-                
-                // Approve the mission unanimously.
-                for (var i = 0; i < players.Length; i++)
-                {
-                    game = gameDataProvider.GetGameById(game.GameId);
-                    gameManager = new GameManager(game, gameDataProvider, smsProvider);
-                    gameManager.ExecuteCommand(players[i], Command.ApproveRoster);
-                }
-                
-                // Fail the mission
-                for (var i = 0; i < 2; i++)
-                {
-                    game = gameDataProvider.GetGameById(game.GameId);
-                    gameManager = new GameManager(game, gameDataProvider, smsProvider);
-                    gameManager.ExecuteCommand(players[i], Command.PassMission);
-                }
-                game = gameDataProvider.GetGameById(game.GameId);
-                gameManager = new GameManager(game, gameDataProvider, smsProvider);
-                gameManager.ExecuteCommand(players[2], Command.FailMission);
-                
-                // Select mission peeps
-                game = gameDataProvider.GetGameById(game.GameId);
-                leader = game.Players[game.LeaderCount % game.Players.Count];
-                gameManager = new GameManager(game, gameDataProvider, smsProvider);
-                gameManager.ExecuteCommand(leader, Command.SelectRoster, new string[] {
-                    playerNames[0],
-                    playerNames[1]
-                });
-                
-                // Confirm
-                game = gameDataProvider.GetGameById(game.GameId);
-                gameManager = new GameManager(game, gameDataProvider, smsProvider);
-                gameManager.ExecuteCommand(leader, Command.ConfirmRoster);
-                
-                // Approve the mission unanimously.
-                for (var i = 0; i < players.Length; i++)
-                {
-                    game = gameDataProvider.GetGameById(game.GameId);
-                    gameManager = new GameManager(game, gameDataProvider, smsProvider);
-                    gameManager.ExecuteCommand(players[i], Command.ApproveRoster);
-                }
-                
-                // Fail the mission
-                for (var i = 0; i < 1; i++)
-                {
-                    game = gameDataProvider.GetGameById(game.GameId);
-                    gameManager = new GameManager(game, gameDataProvider, smsProvider);
-                    gameManager.ExecuteCommand(players[i], Command.PassMission);
-                }
-                game = gameDataProvider.GetGameById(game.GameId);
-                gameManager = new GameManager(game, gameDataProvider, smsProvider);
-                gameManager.ExecuteCommand(players[1], Command.FailMission);
-                
-                // Select mission peeps
-                game = gameDataProvider.GetGameById(game.GameId);
-                leader = game.Players[game.LeaderCount % game.Players.Count];
-                gameManager = new GameManager(game, gameDataProvider, smsProvider);
-                gameManager.ExecuteCommand(leader, Command.SelectRoster, new string[] {
-                    playerNames[0],
-                    playerNames[1],
-                    playerNames[2]
-                });
-                
-                // Confirm
-                game = gameDataProvider.GetGameById(game.GameId);
-                gameManager = new GameManager(game, gameDataProvider, smsProvider);
-                gameManager.ExecuteCommand(leader, Command.ConfirmRoster);
-                
-                // Approve the mission unanimously.
-                for (var i = 0; i < players.Length; i++)
-                {
-                    game = gameDataProvider.GetGameById(game.GameId);
-                    gameManager = new GameManager(game, gameDataProvider, smsProvider);
-                    gameManager.ExecuteCommand(players[i], Command.ApproveRoster);
-                }
-                
-                // Fail the mission
-                for (var i = 0; i < 2; i++)
-                {
-                    game = gameDataProvider.GetGameById(game.GameId);
-                    gameManager = new GameManager(game, gameDataProvider, smsProvider);
-                    gameManager.ExecuteCommand(players[i], Command.PassMission);
-                }
-                game = gameDataProvider.GetGameById(game.GameId);
-                gameManager = new GameManager(game, gameDataProvider, smsProvider);
-                gameManager.ExecuteCommand(players[2], Command.FailMission);
-                
-                // Make this thing fail so I can see the output (shake fist)
-                Assert.True(false);
+                Sms(_playerInfo[i, 1], "Name " + _playerInfo[i, 0]);
             }
+            
+            // Check that players have been created and named properly
+            for (var i = 0; i < playerCount; i++)
+            {
+                var player = _db.Players.SingleOrDefault(p => p.PhoneNumber == _playerInfo[i, 1] && p.Name == _playerInfo[i, 0]);
+                Assert.NotNull(player);
+            }
+        }
+        
+        [Theory]
+        [InlineData(5)]
+        public void RunGame(int numPlayers = GameManager.MinPlayers)
+        {
+            var rand = new Random();
+            
+            // Join up players
+            NamePlayers(numPlayers);
+            
+            // Create new game
+            Sms(_playerInfo[0, 1], "New");
+            
+            // Verify new game
+            var player = _db.Players
+                .Include(p => p.CurrentGame)
+                .SingleOrDefault(p => p.PhoneNumber == _playerInfo[0, 1]);
+            Assert.NotNull(player);
+            Assert.NotNull(player.CurrentGame);
+            
+            // Join remaining players
+            for (var i = 1; i < numPlayers; i++)
+            {
+                Sms(_playerInfo[i, 1], "Join " + player.CurrentGame.JoinCode);
+            }
+            
+            // Verify all players are in the game
+            var game = _db.Games
+                .Include(g => g.GamePlayers)
+                .ThenInclude(gp => gp.Player)
+                .SingleOrDefault(g => g.GameId == player.CurrentGame.GameId);
+            Assert.NotNull(game);
+            var gameId = game.GameId;
+            for (var i = 0; i < numPlayers; i++)
+            {
+                Assert.NotNull(
+                    game.GamePlayers
+                        .SingleOrDefault(p => p.Player.PhoneNumber == _playerInfo[i, 1]
+                            && p.Player.Name == _playerInfo[i, 0])
+                );
+            }
+            
+            // Start the game
+            Sms(_playerInfo[0, 1], "Start");
+            
+            // Verify the game has moved to the roster state
+            game = _db.Games
+                .Hydrate()
+                .SingleOrDefault(g => g.GameId == gameId);
+            Assert.Equal(game.CurrentState, typeof(RosterState).Name);
+            
+            // Run each round
+            while (true)
+            {
+                var leader = game.GamePlayers
+                    .OrderBy(gp => gp.TurnOrder)
+                    .ToList()[game.LeaderCount % game.GamePlayers.Count];
+                var missionPlayerCount = GameManager
+                    .MissionPlayerNumber[game.Rounds.Count - 1, game.GamePlayers.Count - GameManager.MinPlayers];
+                    
+                // Select players
+                var selectedNames = new string[missionPlayerCount];
+                var selectedNumbers = new string[missionPlayerCount];
+                for (var i = 0; i < selectedNames.Length; i++)
+                {
+                    selectedNames[i] = _playerInfo[i, 0];
+                    selectedNumbers[i] = _playerInfo[i, 1];
+                }
+                Sms(leader.Player.PhoneNumber, "Select " + string.Join(", ", selectedNames));
+                
+                // Confirm selection
+                Sms(leader.Player.PhoneNumber, "Confirm");
+                
+                // Randomly approve/reject
+                // TODO: This makes this test nondeterministic... rethink
+                for (var i = 0; i < numPlayers; i++)
+                {
+                    if (rand.NextDouble() > 0.5)
+                    {
+                        Sms(_playerInfo[i, 1], "Approve");
+                    }
+                    else
+                    {
+                        Sms(_playerInfo[i, 1], "Reject");
+                    }
+                }
+                
+                game = _db.Games
+                    .Hydrate()
+                    .SingleOrDefault(g => g.GameId == gameId);
+                if (game.CurrentState != typeof(MissionState).Name)
+                {
+                    continue;
+                }
+                
+                // Randomly pass/fail
+                // TODO: This makes this test nondeterministic... rethink
+                if (rand.NextDouble() > 0.5)
+                {
+                    var numFails = GameManager.MissionRequiredFailCount[game.Rounds.Count - 1, game.GamePlayers.Count - GameManager.MinPlayers];
+                    for (var i = 0; i < numFails; i++)
+                    {
+                        Sms(selectedNumbers[i], "Fail");
+                    }
+                    for (var i = numFails; i < selectedNumbers.Length; i++)
+                    {
+                        Sms(selectedNumbers[i], "Pass");
+                    }
+                    game = _db.Games
+                        .Hydrate()
+                        .SingleOrDefault(g => g.GameId == gameId);
+                    Assert.True(game.Rounds.OrderBy(r => r.RoundNumber).ToList()[game.Rounds.Count - 2].BadWins);
+                }
+                else
+                {
+                    for (var i = 0; i < selectedNumbers.Length; i++)
+                    {
+                        Sms(selectedNumbers[i], "Pass");
+                    }
+                    game = _db.Games
+                        .Hydrate()
+                        .SingleOrDefault(g => g.GameId == gameId);
+                    Assert.False(game.Rounds.OrderBy(r => r.RoundNumber).ToList()[game.Rounds.Count - 2].BadWins);
+                }
+                
+                game = _db.Games
+                    .Hydrate()
+                    .SingleOrDefault(g => g.GameId == gameId);
+                
+                if (game.CurrentState != typeof(RosterState).Name)
+                {
+                    break;
+                }
+            }
+            
+            Assert.Equal(game.CurrentState, typeof(GameOverState).Name);
         }
     }
 }

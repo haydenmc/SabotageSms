@@ -15,7 +15,7 @@ namespace SabotageSms.GameControl.States
         {
             var round = _game.Rounds.Last();
             SmsAllExcept(round.SelectedPlayers,
-                String.Format("MISSION START: {0}.",
+                String.Format(GameStrings.MissionStart,
                     String.Join(", ", round.SelectedPlayers.Select(p => p.Name))));
             foreach (var p in round.SelectedPlayers)
             {
@@ -24,7 +24,7 @@ namespace SabotageSms.GameControl.States
                         .SelectedPlayers
                         .Where(sp => sp.PlayerId != p.PlayerId)
                         .Select(sp => sp.Name));
-                SmsPlayer(p, String.Format("MISSION START: You, {0}. 'Pass' or 'Fail'.", otherPlayerNames));
+                SmsPlayer(p, String.Format(GameStrings.MissionStartYou, otherPlayerNames));
             }
         }
 
@@ -35,7 +35,7 @@ namespace SabotageSms.GameControl.States
                 var round = _game.Rounds.Last();
                 if (round.SelectedPlayers.SingleOrDefault(sp => sp.PlayerId == fromPlayer.PlayerId) == null)
                 {
-                    SmsPlayer(fromPlayer, "You were not selected for this mission.");
+                    SmsPlayer(fromPlayer, GameStrings.YouAreNotOnThisMission);
                     return this;
                 }
                 
@@ -53,12 +53,12 @@ namespace SabotageSms.GameControl.States
                     if (round.FailingPlayers.Count >= missionFailCount)
                     {
                         round = _gameDataProvider.SetRoundBadWins(round.RoundId, true);
-                        SmsAll(String.Format("MISSION SABOTAGED: {0} pass, {1} fail.", round.PassingPlayers.Count, round.FailingPlayers.Count));
+                        SmsAll(String.Format(GameStrings.MissionSabotaged, round.PassingPlayers.Count, round.FailingPlayers.Count));
                     }
                     else
                     {
                         round = _gameDataProvider.SetRoundBadWins(round.RoundId, false);
-                        SmsAll(String.Format("MISSION SUCCEEDED: {0} pass, {1} fail.", round.PassingPlayers.Count, round.FailingPlayers.Count));
+                        SmsAll(String.Format(GameStrings.MissionSucceeded, round.PassingPlayers.Count, round.FailingPlayers.Count));
                     }
                     
                     // Determine game end
@@ -66,14 +66,14 @@ namespace SabotageSms.GameControl.States
                     var goodWinCount = _game.Rounds.Where(r => !r.BadWins).Count();
                     if (badWinCount >= GameManager.WinCount || goodWinCount >= GameManager.WinCount)
                     {
-                        var badNames = String.Format("Saboteurs: {0}", String.Join(", ", _game.BadPlayers.Select(p => p.Name)));
+                        var badNames = String.Join(", ", _game.BadPlayers.Select(p => p.Name));
                         if (badWinCount > goodWinCount)
                         {
-                            SmsAll(String.Format("GAME OVER: SABOTEURS WIN.\n{0}", badNames));
+                            SmsAll(String.Format(GameStrings.SaboteursWin, badNames));
                         }
                         else
                         {
-                            SmsAll(String.Format("GAME OVER: SABOTEURS LOSE.\n{0}", badNames));
+                            SmsAll(String.Format(GameStrings.SaboteursLose, badNames));
                         }
                         // Transition to game over state
                         return new GameOverState(_gameDataProvider, _smsProvider, _game);
@@ -93,7 +93,7 @@ namespace SabotageSms.GameControl.States
                 else
                 {
                     SmsPlayer(fromPlayer,
-                        String.Format("Response recorded. Still waiting on {0} players.", 
+                        String.Format(GameStrings.ResponseRecordedWaiting, 
                             round.SelectedPlayers.Count - (round.PassingPlayers.Count + round.FailingPlayers.Count)));
                     return this;
                 }

@@ -7,7 +7,7 @@ namespace SabotageSms.GameControl.States
 {
     public class LobbyState : AbstractState
     {
-        public LobbyState(IGameDataProvider gameDataProvider, ISmsProvider smsProvider, Game game, AbstractState resetState)
+        public LobbyState(IGameDataProvider gameDataProvider, ISmsProvider smsProvider, Game game)
             : base(gameDataProvider, smsProvider, game)
         {}
         
@@ -30,11 +30,11 @@ namespace SabotageSms.GameControl.States
                     // Inform each player of their role
                     foreach (var player in _game.BadPlayers)
                     {
-                        SmsPlayer(player, "TOP SECRET: You are a saboteur!");
+                        SmsPlayer(player, GameStrings.YouAreBad);
                     }
                     foreach (var player in _game.GoodPlayers)
                     {
-                        SmsPlayer(player, "TOP SECRET: You are a good player!");
+                        SmsPlayer(player, GameStrings.YouAreGood);
                     }
                     
                     // Scramble turn order
@@ -51,7 +51,7 @@ namespace SabotageSms.GameControl.States
                 else
                 {
                     SmsPlayer(fromPlayer,
-                        String.Format("You cannot start the game yet. You need between {0} and {1} players.",
+                        String.Format(GameStrings.NeedMorePlayers,
                             GameManager.MinPlayers,
                             GameManager.MaxPlayers));
                     return this;

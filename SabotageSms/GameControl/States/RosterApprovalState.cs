@@ -14,7 +14,7 @@ namespace SabotageSms.GameControl.States
         public void AnnounceStart()
         {
             var selectedPlayerNames = string.Join(", ", _game.Rounds.Last().SelectedPlayers.Select(p => p.Name));
-            SmsAll(String.Format("{0} have been selected. Vote 'approve' or 'reject'.", selectedPlayerNames));
+            SmsAll(String.Format(GameStrings.PlayersSelectedForApproval, selectedPlayerNames));
         }
 
         public override AbstractState ProcessCommand(Player fromPlayer, Command command, object parameters)
@@ -31,13 +31,13 @@ namespace SabotageSms.GameControl.States
                 // Check if all the votes are in.
                 if ((round.ApprovingPlayers.Count + round.RejectingPlayers.Count) >= _game.Players.Count)
                 {
-                    var playerVoteSummary = String.Format("Approve: {0}\nReject: {1}",
+                    var playerVoteSummary = String.Format(GameStrings.ApproveRejectList,
                         string.Join(", ", round.ApprovingPlayers.Select(p => p.Name)),
                         string.Join(", ", round.RejectingPlayers.Select(p => p.Name)));
                     if (round.ApprovingPlayers.Count > round.RejectingPlayers.Count)
                     {
                         // Mission is approved.
-                        SmsAll(String.Format("MISSION APPROVED.\n{0}", playerVoteSummary));
+                        SmsAll(String.Format(GameStrings.MissionApproved, playerVoteSummary));
                         // Advance to mission state.
                         var missionState = new MissionState(_gameDataProvider, _smsProvider, _game);
                         missionState.Announce();
@@ -55,7 +55,7 @@ namespace SabotageSms.GameControl.States
                         }
                         else
                         {
-                            SmsAll(String.Format("MISSION REJECTED. {0} rejections remain.\n{1}",
+                            SmsAll(String.Format(GameStrings.MissionRejected,
                                 GameManager.MaxRejectionCount - numRejections,
                                 playerVoteSummary));
                             // Clear approvals and advance to next leader
@@ -71,7 +71,7 @@ namespace SabotageSms.GameControl.States
                 else // Not all votes tallied yet
                 {
                     SmsPlayer(fromPlayer,
-                        String.Format("Response recorded. Still waiting on {0} players.", 
+                        String.Format(GameStrings.ResponseRecordedWaiting, 
                             _game.Players.Count - (round.ApprovingPlayers.Count + round.RejectingPlayers.Count)));
                     return this;
                 }

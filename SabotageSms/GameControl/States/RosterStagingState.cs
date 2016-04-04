@@ -30,7 +30,7 @@ namespace SabotageSms.GameControl.States
                 if (fromPlayer.PlayerId != leader.PlayerId)
                 {
                     SmsPlayer(fromPlayer,
-                        String.Format("Only {0} can confirm the mission roster.", leader.Name));
+                        String.Format(GameStrings.OnlyLeaderCanConfirmRoster, leader.Name));
                     return this;
                 }
                 var approvalState = new RosterApprovalState(_gameDataProvider, _smsProvider, _game);

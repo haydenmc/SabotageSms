@@ -5,8 +5,17 @@ using SabotageSms.Models;
 
 namespace SabotageSms.Providers
 {
+    /// <summary>
+    /// Used to parse text messages into commands
+    /// </summary>
     public class ParsingProvider
     {
+        /// <summary>
+        /// Parse a text command from a particular player into a command and its parameters
+        /// </summary>
+        /// <param name="player">The player who is sending the message</param>
+        /// <param name="messageBody">The text content of the message</param>
+        /// <returns>A parsed command with optional parameters</returns>
         public ParsedCommand ParseCommand(Player player, string messageBody)
         {
             var namePattern = new Regex("(?i)^name (?<name>.+)").Match(messageBody);

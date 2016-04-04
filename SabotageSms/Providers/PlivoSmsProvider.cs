@@ -7,6 +7,10 @@ using Newtonsoft.Json;
 
 namespace SabotageSms.Providers
 {
+    /// <summary>
+    /// Plivo implementation of outgoing SMS messaging
+    /// https://www.plivo.com/sms-api/
+    /// </summary>
     public class PlivoSmsProvider : ISmsProvider
     {
         private readonly string MessageUrl = "https://api.plivo.com/v1/Account/{0}/Message/";
