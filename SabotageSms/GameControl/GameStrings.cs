@@ -7,6 +7,9 @@ namespace SabotageSms.GameControl
     public static class GameStrings
     {
         public const string UnknownCommand             = "Sorry, I didn't understand you. Please try another command.";
+        public const string YouNeedAName               = "Hello! Before you begin, you need to set a name. Please reply with 'name YOURNAME'.";
+        public const string NameRequirements           = "Your name cannot be blank, and can not have any special characters.";
+        public const string DuplicateName              = "Someone else is in your game is already using this name.";
         public const string NameSet                    = "Your name has been set to '{0}'. 'New' or 'Join CODEHERE'.";
         public const string PlayerHasChangedName       = "'{0}' has changed their name to '{1}'.";
         public const string NewGameCreated             = "New game created! Tell others to text 'Join {0}' to this number.";

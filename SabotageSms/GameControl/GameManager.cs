@@ -119,6 +119,12 @@ namespace SabotageSms.GameControl
         /// <param name="parameters">Parameters for the command</param>
         public void ExecuteCommand(Player fromPlayer, Command command, object parameters = null)
         {
+            // Check if this player has a name, ask them to set one if they don't.
+            if (command != Command.Name && (fromPlayer.Name == null || fromPlayer.Name.Length <= 0))
+            {
+                _smsProvider.SendSms(fromPlayer.PhoneNumber, GameStrings.YouNeedAName);
+                return;
+            }
             var resultState = _currentState.ProcessCommand(fromPlayer, command, parameters);
             if (resultState == null)
             {

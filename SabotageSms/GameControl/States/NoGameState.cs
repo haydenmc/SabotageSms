@@ -22,8 +22,19 @@ namespace SabotageSms.GameControl.States
                 if (assignedName.Length > GameManager.MaxNameLength) {
                     assignedName = assignedName.Substring(0, GameManager.MaxNameLength);
                 }
+                if (assignedName.Length <= 0)
+                {
+                    SmsPlayer(fromPlayer, GameStrings.NameRequirements);
+                    return this;
+                }
                 if (_game != null)
                 {
+                    // Check for duplicate names
+                    if (_game.Players.Where(p => p.Name.ToUpper() == assignedName.ToUpper()).Count() > 0)
+                    {
+                        SmsPlayer(fromPlayer, GameStrings.DuplicateName);
+                        return this;
+                    }
                     SmsAllExcept(fromPlayer,
                         String.Format(GameStrings.PlayerHasChangedName, fromPlayer.Name, assignedName));
                 }
