@@ -8,6 +8,7 @@ namespace SabotageSms.Controllers
     /// Nexmo implementation of incoming SMS
     /// https://docs.nexmo.com/api-ref/sms-api
     /// </summary>
+    [Route("api/Nexmo")]
     public class NexmoSmsController : SmsController
     {
         public NexmoSmsController(IGameDataProvider gameDataProvider, ParsingProvider parsingProvider, ISmsProvider smsProvider)
