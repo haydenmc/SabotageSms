@@ -30,7 +30,21 @@ namespace SabotageSms
             services.AddEntityFramework()
                 .AddSqlServer()
                 .AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Configuration["Data:DefaultConnection:ConnectionString"]));
-            services.AddSingleton<ISmsProvider, PlivoSmsProvider>();
+            
+            // Use SMS provider configured in app settings
+            switch (Configuration["OutgoingSmsProvider"])
+            {
+                case "Nexmo":
+                    services.AddSingleton<ISmsProvider, NexmoSmsProvider>();
+                    break;
+                case "Plivo":
+                    services.AddSingleton<ISmsProvider, PlivoSmsProvider>();
+                    break;
+                default:
+                    services.AddSingleton<ISmsProvider, PlivoSmsProvider>();
+                    break;
+            }
+            
             services.AddSingleton<ParsingProvider, ParsingProvider>();
             services.AddScoped<IGameDataProvider, EfGameDataProvider>();
             services.AddMvc()
