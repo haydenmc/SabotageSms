@@ -30,7 +30,7 @@ namespace SabotageSms.GameControl.States
                     // Inform each player of their role
                     foreach (var player in _game.BadPlayers)
                     {
-                        SmsPlayer(player, GameStrings.YouAreBad);
+                        SmsPlayer(player, string.Format(GameStrings.YouAreBad, string.Join(", ", _game.BadPlayers.Select(p => p.Name))));
                     }
                     foreach (var player in _game.GoodPlayers)
                     {

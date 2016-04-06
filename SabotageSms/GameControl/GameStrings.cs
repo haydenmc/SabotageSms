@@ -15,12 +15,13 @@ namespace SabotageSms.GameControl
         public const string NameSet                    = "Your name has been set to '{0}'. 'New' or 'Join CODEHERE'.";
         public const string PlayerHasChangedName       = "'{0}' has changed their name to '{1}'.";
         public const string NewGameCreated             = "New game created! Tell others to text 'Join {0}' to this number.";
+        public const string GameBegin                  = "GAME BEGIN: {0}.";
         public const string CouldNotFindGame           = "We couldn't find that game.";
         public const string CannotJoinGameInProgress   = "You can't join a game in progress.";
         public const string GameIsFull                 = "This game is full.";
         public const string YouHaveJoined              = "You have joined the game! There are {0} players currently in this game.";
         public const string NewPlayerJoined            = "{0} has joined the game! There are {1} players currently in this game.";
-        public const string YouAreBad                  = "TOP SECRET: You are a saboteur!";
+        public const string YouAreBad                  = "TOP SECRET: {0} are saboteurs!";
         public const string YouAreGood                 = "TOP SECRET: You are good!";
         public const string NeedMorePlayers            = "You cannot start the game yet. You need between {0} and {1} players.";
         public const string MissionStart               = "MISSION START: {0}.";
@@ -37,7 +38,7 @@ namespace SabotageSms.GameControl
         public const string MissionRejected            = "MISSION REJECTED. {0} rejections remain.\n{1}";
         public const string OnlyLeaderCanConfirmRoster = "Only {0} can confirm the mission roster.";
         public const string FailCountWarning           = "*{0} fails required to sabotage this mission.";
-        public const string NewRoundAnnounce           = "ROUND {0}: {1} leader. {2} players required.{3}";
+        public const string NewRoundAnnounce           = "ROUND {0}: {1} is the leader. {2} players required.{3}";
         public const string NewRoundAnnounceForLeader  = "ROUND {0}: You are the leader. 'Select' {1} players.{2}";
         public const string OnlyLeaderCanSelectRoster  = "Only {0} can choose players to participate in this mission.";
         public const string MustSelectNumberOfPlayers  = "You need to select {0} players for this mission.";

@@ -61,6 +61,9 @@ namespace SabotageSms.GameControl.States
                         SmsAll(String.Format(GameStrings.MissionSucceeded, round.PassingPlayers.Count, round.FailingPlayers.Count));
                     }
                     
+                    // Update round in game reference
+                    _game.Rounds[_game.Rounds.Count - 1] = round;
+                    
                     // Determine game end
                     var badWinCount = _game.Rounds.Where(r => r.BadWins).Count();
                     var goodWinCount = _game.Rounds.Where(r => !r.BadWins).Count();
