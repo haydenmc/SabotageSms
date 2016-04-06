@@ -43,6 +43,9 @@ namespace SabotageSms.GameControl.States
                     // Add new round
                     _game = _gameDataProvider.AddRound(_game.GameId);
                     
+                    // Announce game begin
+                    SmsAll(string.Format(GameStrings.GameBegin, string.Join(", ", _game.Players.Select(p => p.Name))));
+                    
                     // Advance to roster state
                     var rosterState = new RosterState(_gameDataProvider, _smsProvider, _game);
                     rosterState.Announce();
