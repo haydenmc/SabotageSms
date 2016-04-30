@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -29,7 +30,7 @@ namespace SabotageSms.Providers
                 var postData = new FormUrlEncodedContent(new[] {
                     new KeyValuePair<string, string>("api_key", _configuration["ApiKeys:NexmoApiKey"]),
                     new KeyValuePair<string, string>("api_secret", _configuration["ApiKeys:NexmoApiSecret"]),
-                    new KeyValuePair<string, string>("to", phoneNumber),
+                    new KeyValuePair<string, string>("to", new Regex(@"[^\d]").Replace(phoneNumber, "")),
                     new KeyValuePair<string, string>("from", _configuration["ApiKeys:NexmoSourceNumber"]),
                     new KeyValuePair<string, string>("text", body)
                 });
