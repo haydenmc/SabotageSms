@@ -1,4 +1,5 @@
 using Microsoft.AspNet.Mvc;
+using Microsoft.Extensions.Logging;
 using SabotageSms.Models;
 using SabotageSms.Providers;
 
@@ -11,13 +12,19 @@ namespace SabotageSms.Controllers
     [Route("api/Nexmo")]
     public class NexmoSmsController : SmsController
     {
-        public NexmoSmsController(IGameDataProvider gameDataProvider, ParsingProvider parsingProvider, ISmsProvider smsProvider)
-            : base(gameDataProvider, parsingProvider, smsProvider) {}
+        private ILogger<NexmoSmsController> _logger { get; set; }
+        
+        public NexmoSmsController(IGameDataProvider gameDataProvider, ParsingProvider parsingProvider, ISmsProvider smsProvider, ILogger<NexmoSmsController> logger)
+            : base(gameDataProvider, parsingProvider, smsProvider)
+        {
+            _logger = logger;
+        }
         
         [HttpPost]
         [Route("")]
         public IActionResult ReceiveSms(NexmoIncomingMessageModel incomingSms)
         {
+            _logger.LogInformation($"Received SMS from {incomingSms.Msisdn} to {incomingSms.To}: '{incomingSms.Text}'");
             ProcessSms(incomingSms.Msisdn, incomingSms.Text);
             return Ok();
         }

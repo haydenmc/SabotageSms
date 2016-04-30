@@ -3,6 +3,7 @@ using Microsoft.AspNet.Hosting;
 using Microsoft.Data.Entity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using SabotageSms.Models.DbModels;
 using SabotageSms.Providers;
 
@@ -52,13 +53,14 @@ namespace SabotageSms
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory logger)
         {
             app.UseIISPlatformHandler();
             
             if(env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                logger.AddConsole();
             }
             
             app.UseMvcWithDefaultRoute();

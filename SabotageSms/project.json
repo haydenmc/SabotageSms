@@ -13,6 +13,8 @@
     "Microsoft.AspNet.Mvc": "6.0.0-rc1-final",
     "Microsoft.AspNet.Mvc.Formatters.Xml": "6.0.0-rc1-final",
     "Microsoft.AspNet.Diagnostics": "1.0.0-rc1-final",
+    "Microsoft.Extensions.Logging": "1.0.0-rc1-final",
+    "Microsoft.Extensions.Logging.Console": "1.0.0-rc1-final",
     "System.Net.Http": "4.0.1-beta-23516",
     "EntityFramework.MicrosoftSqlServer": "7.0.0-rc1-final",
     "EntityFramework.Commands": "7.0.0-rc1-final"
