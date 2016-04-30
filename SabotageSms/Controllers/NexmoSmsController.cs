@@ -20,6 +20,7 @@ namespace SabotageSms.Controllers
             _logger = logger;
         }
         
+        [HttpGet]
         [HttpPost]
         [Route("")]
         public IActionResult ReceiveSms(NexmoIncomingMessageModel incomingSms)
