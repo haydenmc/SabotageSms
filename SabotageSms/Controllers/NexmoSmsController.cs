@@ -25,6 +25,11 @@ namespace SabotageSms.Controllers
         [Route("")]
         public IActionResult ReceiveSms(NexmoIncomingMessageModel incomingSms)
         {
+            if (incomingSms.Msisdn == null || incomingSms.Msisdn.Length <= 0)
+            {
+                _logger.LogInformation($"Received blank request.");
+                return Ok();
+            }
             _logger.LogInformation($"Received SMS from {incomingSms.Msisdn} to {incomingSms.To}: '{incomingSms.Text}'");
             ProcessSms(incomingSms.Msisdn, incomingSms.Text);
             return Ok();
